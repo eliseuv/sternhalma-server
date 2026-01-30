@@ -388,13 +388,11 @@ impl Server {
 
                     // Update timing
                     game_timer.on_trigger(&game, |timer| {
-                        // Calculate size of game history in memory
-                        let hist_size = format_size(game.history_bytes(), BINARY);
                         // Log information
                         log::info!(
-                            "Turns: {turns} | Rate: {rate:.2} turn/s | History: {hist_size}",
-                            turns = game.status().turns(),
+                            "\n{game}\nRate: {rate:.2} turn/s | History: {hist_size}",
                             rate = timer.turns_rate(),
+                            hist_size = format_size(game.history_bytes(), BINARY),
                         )
                     });
 
