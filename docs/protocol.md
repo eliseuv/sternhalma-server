@@ -28,7 +28,7 @@ The server supports two transport methods, which differ in how messages are fram
 2. **Client Sends**: `Hello` (for new session) or `Reconnect` (for existing session).
 3. **Server Responds**:
     * `Welcome`: Connection accepted, session ID assigned.
-    * `Reject`: Connection refused (e.g., server full, invalid session).
+    * `Reject`: Connection refused with reason for rejection (e.g., server full, invalid session)
 4. If accepted, Client is now ready to play. Note that the Client ALWAYS sees itself as "Player1".
 
 ### Game Loop
@@ -44,10 +44,10 @@ The server supports two transport methods, which differ in how messages are fram
 ### Basic Types
 
 * **UUID**: String (Canonical 8-4-4-4-12 format)
-* **HexIdx**: Array of 2 integers `[q, r]` representing axial coordinates.
 * **Player**: Unsigned integer: `1` or `2`
+* **HexIdx**: Array of 2 unsigned integers `[q, r]` representing axial coordinates.
 * **MovementIndices**: Array of 2 `HexIdx` `[start, end]`.
-* **Scores**: Array of 2 integers `[score_p1, score_p2]`.
+* **Scores**: Array of 2 unsigned integers `[score_player1, score_player2]`.
 
 ### GameResult
 
@@ -108,6 +108,8 @@ Session established successfully.
 ### Reject
 
 Connection rejected.
+
+TODO: Create enum of possible reasons
 
 ```json
 {
