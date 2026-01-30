@@ -188,10 +188,10 @@ impl Game {
                 // Update game scores
                 let goal = goal_indices(&player);
                 if goal.contains(&movement[0]) {
-                    scores[player as usize] -= 1;
+                    scores[player as usize - 1] -= 1;
                 }
                 if goal.contains(&movement[1]) {
-                    scores[player as usize] += 1;
+                    scores[player as usize - 1] += 1;
                 }
 
                 // Check winning conditions

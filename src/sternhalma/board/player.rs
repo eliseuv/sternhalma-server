@@ -15,10 +15,10 @@ pub const PLAYER_COUNT: usize = 2;
 /// Sternhalma players
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, serde::Deserialize)]
 #[serde(rename_all = "snake_case")]
-#[repr(usize)]
+#[repr(u8)]
 pub enum Player {
-    Player1,
-    Player2,
+    Player1 = 1,
+    Player2 = 2,
 }
 
 impl Player {
