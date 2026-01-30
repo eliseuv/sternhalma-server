@@ -327,7 +327,7 @@ impl Display for Board<Player> {
             write!(f, "{}", " ".repeat(i))?;
             for j in 0..BOARD_LENGTH {
                 match &self[[i, j]] {
-                    None => write!(f, "󠀠󠀠󠀠󠀠   ")?,
+                    None => write!(f, "   ")?,
                     Some(None) => write!(f, "⚫ ")?,
                     Some(Some(player)) => write!(f, "{piece} ", piece = player.piece())?,
                 }
