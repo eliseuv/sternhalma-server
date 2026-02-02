@@ -69,7 +69,7 @@ The server supports two concurrent transport modes:
 
 Both transports use the same message format serialized with [ciborium](https://github.com/enarx/ciborium) (CBOR).
 
-For a detailed specification of the protocol, framing, and message schemas, please refer to [protocol.md](docs/protocol.md).
+For a detailed specification of the protocol, framing, and message schemas, please refer to the [Protocol Specification](docs/protocol.md).
 
 ### Connection & Framing
 
