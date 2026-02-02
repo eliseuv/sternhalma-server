@@ -18,14 +18,14 @@ use board::{Board, HexIdx, goal_indices};
 use movement::{Movement, MovementError, MovementIndices};
 use player::{PLAYER_COUNT, Player};
 
+/// Player pieces
+pub mod player;
+
 /// Hexagonal Sternhalma board
 pub mod board;
 
 /// Movements on the board
 pub mod movement;
-
-/// Player pieces
-pub mod player;
 
 use serde::{Deserialize, Serialize};
 
