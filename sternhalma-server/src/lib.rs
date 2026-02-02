@@ -1,6 +1,6 @@
-//! # Server Module
+//! # Sternhalma Server
 //!
-//! This module implements the multi-threaded game server.
+//! This crate implements the multi-threaded game server.
 //! It orchestrates the game loop, manages client connections, and handles message passing.
 //!
 //! ## Architecture
@@ -21,11 +21,7 @@ use itertools::Itertools;
 use tokio::sync::{broadcast, mpsc, oneshot};
 use uuid::Uuid;
 
-use crate::sternhalma::{
-    Game, GameResult, GameStatus,
-    board::{movement::MovementIndices, player::Player},
-    timing::GameTimer,
-};
+use sternhalma_game::{Game, GameResult, GameStatus, movement::MovementIndices, player::Player};
 
 use humansize::{BINARY, format_size};
 
@@ -33,9 +29,12 @@ pub mod client;
 pub mod handshake;
 pub mod messages;
 pub mod protocol;
+pub mod timing;
 pub mod ws;
 
 use messages::{ClientMessage, ClientRequest, ServerBroadcast, ServerMessage};
+
+use crate::timing::GameTimer;
 
 /// Main thread message to server thread
 ///

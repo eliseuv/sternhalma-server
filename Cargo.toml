@@ -1,47 +1,23 @@
-[package]
-name = "sternhalma-server"
-version = "0.1.0"
-edition = "2024"
+[workspace]
 
-[dependencies]
+members = ["sternhalma-server", "sternhalma-game", "sternhalma-python"]
+resolver = "2"
 
-# Command line argument parsing
-clap = { version = "4", features = ["derive"] }
-
-# Networking
-tokio = { version = "1", features = ["full"] }
+[workspace.dependencies]
 
 # Iteration
 itertools = "0.14"
 
 # Serialization
 serde = { version = "1", features = ["derive"] }
-serde_repr = "0.1"
-serde_json = "1"
-ciborium = "0.2"
-tokio-util = { version = "0.7", features = ["codec"] }
-bytes = "1"
-uuid = { version = "1.0", features = ["v4", "serde"] }
-
-# Logging
-log = "0.4"
-env_logger = "0.11"
-humansize = "2"
 
 # Error handling
 thiserror = "2"
 anyhow = "1"
 
-# Testing
-rand = "0.9"
-rand_xoshiro = "0.7"
-rand_distr = "0.5"
-futures = "0.3.31"
-axum = { version = "0.8.7", features = ["ws"] }
-tower-http = { version = "0.6.8", features = ["cors", "fs"] }
-tokio-stream = "0.1.17"
+# Logging
+log = "0.4"
+env_logger = "0.11"
 
-[dev-dependencies]
-tokio = { version = "1", features = ["full", "test-util"] }
-serial_test = "3"
-assert_matches = "1"
+# Internal
+sternhalma-game = { path = "sternhalma-game" }

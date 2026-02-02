@@ -7,10 +7,7 @@
 //! - [`ServerBroadcast`]: Messages broadcast from Server to all Clients.
 //! - [`ClientMessage`]: Requests from a Client to the Server.
 
-use crate::sternhalma::{
-    GameResult, Scores,
-    board::{movement::MovementIndices, player::Player},
-};
+use sternhalma_game::{GameResult, Scores, movement::MovementIndices, player::Player};
 
 /// Message from the Server Thread to a specific Local Client Thread
 ///

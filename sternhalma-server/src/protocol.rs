@@ -10,11 +10,10 @@
 //! ## Codecs
 //! It also includes `tokio_util` codecs ([`ServerCodec`], [`ClientCodec`]) for framing and serialization (CBOR).
 
-use crate::sternhalma::board::{movement::MovementIndices, player::Player};
-use crate::sternhalma::{GameResult, Scores};
 use anyhow::{Context, Result};
 use bytes::{Bytes, BytesMut};
 use serde::{Deserialize, Serialize};
+use sternhalma_game::{GameResult, Scores, movement::MovementIndices, player::Player};
 use tokio_util::codec::{Decoder, Encoder, LengthDelimitedCodec};
 use uuid::Uuid;
 

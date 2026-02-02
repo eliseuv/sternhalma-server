@@ -1,4 +1,4 @@
-//! # Board Module
+//! # Sternhalma Board Module
 //!
 //! This module implements the logical representation of the Sternhalma board.
 //! It handles grid storage, coordinate systems, and basic board operations.
@@ -19,7 +19,10 @@ use std::{
 
 use anyhow::Result;
 
-use crate::sternhalma::board::player::Player;
+use crate::player::Player;
+
+/// Board indices look up tables
+pub mod lut;
 
 /// Length of the Sternhalma board
 pub const BOARD_LENGTH: usize = 17;
@@ -84,9 +87,6 @@ impl<T> IndexMut<HexIdx> for Board<T> {
     }
 }
 
-/// Board indices look up tables
-pub mod lut;
-
 /// Board initialization
 impl<T> Board<T> {
     /// Creates an empty board with valid positions initialized
@@ -150,7 +150,7 @@ impl HexDirection {
 
 impl<T> Board<T> {
     /// Nearest neighbor in a given direction
-    fn nearest_neighbor(
+    pub(crate) fn nearest_neighbor(
         &self,
         idx: HexIdx,
         direction: HexDirection,
@@ -300,12 +300,6 @@ impl<T: PartialEq> Board<T> {
         })
     }
 }
-
-/// Movements on the board
-pub mod movement;
-
-/// Player pieces
-pub mod player;
 
 impl Board<Player> {
     /// Creates a new Sternhalma board with pieces placed in their starting positions

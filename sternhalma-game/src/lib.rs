@@ -1,6 +1,6 @@
-//! # Sternhalma Game Module
+//! # Sternhalma Gam
 //!
-//! This module contains the core game logic for Sternhalma (Chinese Checkers).
+//! This crate contains the core game logic for Sternhalma (Chinese Checkers).
 //! It defines the game state, rules, board representation, and victory conditions.
 //!
 //! ## Key Components
@@ -14,17 +14,18 @@ use std::fmt::{Debug, Display};
 
 use anyhow::Result;
 
-use crate::sternhalma::board::{
-    Board, HexIdx, goal_indices,
-    movement::{Movement, MovementError, MovementIndices},
-    player::{PLAYER_COUNT, Player},
-};
+use board::{Board, HexIdx, goal_indices};
+use movement::{Movement, MovementError, MovementIndices};
+use player::{PLAYER_COUNT, Player};
 
 /// Hexagonal Sternhalma board
 pub mod board;
 
-/// Statistics gathered over turns
-pub mod timing;
+/// Movements on the board
+pub mod movement;
+
+/// Player pieces
+pub mod player;
 
 use serde::{Deserialize, Serialize};
 

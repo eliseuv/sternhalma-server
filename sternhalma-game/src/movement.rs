@@ -1,4 +1,4 @@
-//! # Movement Module
+//! # Sternhalma Movement Module
 //!
 //! This module defines how pieces move on the Sternhalma board.
 //! It handles the validation of moves, including single steps and hop paths.
@@ -12,9 +12,8 @@ use std::fmt::Debug;
 
 use anyhow::Result;
 
-use crate::sternhalma::board::{
-    BOARD_LENGTH, Board, HexDirection, HexIdx, InvalidBoardIndex, player::Player,
-};
+use crate::board::{BOARD_LENGTH, Board, HexDirection, HexIdx, InvalidBoardIndex};
+use crate::player::Player;
 
 /// Movements of a player on the board
 #[derive(Debug)]

@@ -1,0 +1,16 @@
+[package]
+name = "sternhalma_rs"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "sternhalma_rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+
+# Game logic
+sternhalma-game = { workspace = true }
+
+# Python bindings
+pyo3 = { version = "0.28", features = ["extension-module"] }

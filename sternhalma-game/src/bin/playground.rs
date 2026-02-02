@@ -3,9 +3,11 @@ use rand::seq::{IndexedRandom, IteratorRandom};
 use rand_distr::{Distribution, Poisson};
 use rand_xoshiro::{Xoshiro256PlusPlus, rand_core::SeedableRng};
 
-use sternhalma_server::sternhalma::{
+use sternhalma_game::{
     Game, GameStatus,
-    board::{Board, HexIdx, hex_distance, lut, movement::MovementIndices, player::Player},
+    board::{Board, HexIdx, hex_distance, lut},
+    movement::MovementIndices,
+    player::Player,
 };
 
 trait Agent {

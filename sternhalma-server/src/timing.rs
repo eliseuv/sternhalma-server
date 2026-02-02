@@ -6,6 +6,7 @@
 //! ## Key Types
 //! - [`GameTimer`]: A timer that measures the duration of turns and calculates the rate.
 
+use sternhalma_game::Game;
 use tokio::time::Instant;
 
 pub struct GameTimer<const N_TURNS: usize> {
@@ -37,19 +38,19 @@ impl<const N_TURNS: usize> Default for GameTimer<N_TURNS> {
 
 impl<const N_TURNS: usize> GameTimer<N_TURNS> {
     #[inline(always)]
-    pub fn update(&mut self, game: &super::Game) {
-        if game.status.turns().is_multiple_of(N_TURNS) {
+    pub fn update(&mut self, game: &Game) {
+        if game.status().turns().is_multiple_of(N_TURNS) {
             self.turns_rate = N_TURNS as f64 / self.timer.elapsed().as_secs_f64();
             self.timer = Instant::now();
         }
     }
 
     #[inline(always)]
-    pub fn on_trigger<F>(&mut self, game: &super::Game, func: F)
+    pub fn on_trigger<F>(&mut self, game: &Game, func: F)
     where
         F: Fn(&Self),
     {
-        if game.status.turns().is_multiple_of(N_TURNS) {
+        if game.status().turns().is_multiple_of(N_TURNS) {
             self.turns_rate = N_TURNS as f64 / self.timer.elapsed().as_secs_f64();
 
             func(&*self);

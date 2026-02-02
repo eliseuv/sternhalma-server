@@ -11,12 +11,15 @@ use std::pin::Pin;
 
 use anyhow::{Context, Result, bail};
 use futures::{Sink, SinkExt, Stream, StreamExt};
+use sternhalma_game::{
+    GameResult,
+    board::{BOARD_LENGTH, HexIdx},
+    movement::MovementIndices,
+    player::Player,
+};
 use tokio::sync::{broadcast, mpsc};
 
-use crate::{
-    server::protocol::{RemoteInMessage, RemoteOutMessage},
-    sternhalma::board::{BOARD_LENGTH, HexIdx, movement::MovementIndices, player::Player},
-};
+use crate::protocol::{RemoteInMessage, RemoteOutMessage};
 
 use super::messages::{ClientMessage, ClientRequest, ServerBroadcast, ServerMessage};
 
@@ -182,7 +185,7 @@ impl Client {
             // Game has ended
             ServerBroadcast::GameFinished { result } => {
                 let result = match result {
-                    crate::sternhalma::GameResult::Finished {
+                    GameResult::Finished {
                         winner,
                         total_turns,
                         scores,
@@ -191,13 +194,13 @@ impl Client {
                             Player::Player1 => scores,
                             Player::Player2 => [scores[1], scores[0]],
                         };
-                        crate::sternhalma::GameResult::Finished {
+                        GameResult::Finished {
                             winner: self.relative_player(winner),
                             total_turns,
                             scores,
                         }
                     }
-                    crate::sternhalma::GameResult::MaxTurns {
+                    GameResult::MaxTurns {
                         total_turns,
                         scores,
                     } => {
@@ -205,7 +208,7 @@ impl Client {
                             Player::Player1 => scores,
                             Player::Player2 => [scores[1], scores[0]],
                         };
-                        crate::sternhalma::GameResult::MaxTurns {
+                        GameResult::MaxTurns {
                             total_turns,
                             scores,
                         }

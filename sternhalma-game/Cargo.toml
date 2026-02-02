@@ -1,0 +1,26 @@
+[package]
+name = "sternhalma-game"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+# Iteration
+itertools = { workspace = true }
+
+# Error handling
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_repr = "0.1"
+
+# Logging
+log = { workspace = true }
+env_logger = { workspace = true }
+
+# Randomness
+rand = "0.9"
+rand_xoshiro = "0.7"
+rand_distr = "0.5"

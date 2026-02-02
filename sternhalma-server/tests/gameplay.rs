@@ -1,10 +1,10 @@
 use common::TestServer;
-use sternhalma_server::server::protocol::{RemoteInMessage, RemoteOutMessage};
-use sternhalma_server::sternhalma::board::player::Player;
+use sternhalma_game::player::Player;
+use sternhalma_server::protocol::{RemoteInMessage, RemoteOutMessage};
 
 mod common;
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn test_gameplay_turn_and_move() {
     let server = TestServer::new().expect("Failed to start server");
 
