@@ -13,4 +13,5 @@ crate-type = ["cdylib"]
 sternhalma-game = { workspace = true }
 
 # Python bindings
-pyo3 = { version = "0.28", features = ["extension-module"] }
+pyo3 = { version = "0.27.1", features = ["extension-module"] }
+numpy = { version = "0.27.1" }
