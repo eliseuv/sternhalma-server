@@ -88,6 +88,16 @@ impl Game {
 
         Ok(PyArray3::from_array(py, &data))
     }
+
+    /// Get the available moves for the current player
+    fn available_moves(&self) -> PyResult<Vec<((usize, usize), (usize, usize))>> {
+        Ok(self
+            .game
+            .iter_available_moves()
+            .map(|m| sternhalma_game::movement::MovementIndices::from(&m))
+            .map(|[from, to]| (from.try_into().unwrap(), to.try_into().unwrap()))
+            .collect())
+    }
 }
 
 #[pymodule]
