@@ -217,7 +217,9 @@ impl Game {
     /// Iterate over the available movements for the current turn's player
     pub fn iter_available_moves(&self) -> impl Iterator<Item = Movement> {
         match &self.status {
-            GameStatus::Finished { .. } => todo!(),
+            GameStatus::Finished { .. } => {
+                panic!("Cannot iterate over available moves of finished game")
+            }
             GameStatus::Playing { player, .. } => self.board.iter_player_movements(player),
         }
     }
