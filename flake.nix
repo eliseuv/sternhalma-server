@@ -79,6 +79,12 @@
             # # https://nixos.wiki/wiki/Rust#Building_Rust_crates_that_require_external_system_libraries
             openssl.dev
             pkg-config
+
+            # Python
+            uv
+            ruff
+            basedpyright
+
           ]);
 
           # Explicitly tell rust-analyzer where to find the Rust source code
@@ -91,11 +97,16 @@
             with pkgs;
             [
               openssl
+              stdenv.cc.cc.lib
+              zlib
             ]
           );
 
           shellHook = ''
             cargo --version
+            uv --version
+            ruff --version
+            basedpyright --version
           '';
         };
       }
