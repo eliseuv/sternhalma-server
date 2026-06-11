@@ -98,6 +98,53 @@ impl Game {
             .map(|[from, to]| (from.try_into().unwrap(), to.try_into().unwrap()))
             .collect())
     }
+
+    /// Apply movement using from and to indices
+    fn apply_movement(&mut self, from: (usize, usize), to: (usize, usize)) -> PyResult<()> {
+        let from_idx = [from.0, from.1];
+        let to_idx = [to.0, to.1];
+        let movement_indices = [from_idx, to_idx];
+
+        let movement = self
+            .game
+            .iter_available_moves()
+            .find(|m| sternhalma_game::movement::MovementIndices::from(m) == movement_indices);
+
+        if let Some(movement) = movement {
+            self.game.apply_movement(&movement).map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{:?}", e)))?;
+            Ok(())
+        } else {
+            Err(pyo3::exceptions::PyValueError::new_err("Invalid movement"))
+        }
+    }
+
+    /// Apply movement without validation
+    fn apply_movement_unchecked(&mut self, from: (usize, usize), to: (usize, usize)) -> PyResult<()> {
+        let from_idx = [from.0, from.1];
+        let to_idx = [to.0, to.1];
+        let movement_indices = [from_idx, to_idx];
+        
+        unsafe {
+            self.game.apply_movement_unchecked(&movement_indices);
+        }
+        Ok(())
+    }
+
+    /// Get scores
+    fn scores(&self) -> PyResult<(usize, usize)> {
+        let scores = self.game.status().scores();
+        Ok((scores[0], scores[1]))
+    }
+
+    /// Get movement history
+    fn history(&self) -> PyResult<Vec<((usize, usize), (usize, usize))>> {
+        Ok(self
+            .game
+            .history()
+            .iter()
+            .map(|[from, to]| ((from[0], from[1]), (to[0], to[1])))
+            .collect())
+    }
 }
 
 #[pymodule]
