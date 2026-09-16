@@ -21,9 +21,9 @@ updated: 2026-09-16
      - **Now blocked on:** ...
      - **Next action:** ... -->
 
-- **Last session:** Unguided review pass (DIRECTIONS.md empty), agenda driven by the command argument "fix the preexisting issues found" from the prior /project-implement session's handoff. Investigated and confirmed root causes for all three: sternhalma-python's clippy/fmt violations (R-13), sternhalma-agent's pytest collection failure (R-14, root cause: missing pythonpath ini option), and sternhalma-game's length-1 Hops validation gap (R-15). Verified R-14's fix in a throwaway edit, reverted before writing the item -- did not fix any of the three, since /project-review never touches source.
+- **Last session:** Implemented R-13 (sternhalma-python clippy/fmt), R-14 (pytest collection fix), R-15 (reject length-1 Hops paths). Decomposed R-4 into R-16 (Lobby core, done -- sternhalma-server now supports concurrent games) and R-17 (cross-game reconnection, deferred but likely already satisfied by R-16's design -- not verified). Implemented R-12 (agent migrated onto sternhalma_rs bindings), closing M-1 (Preparation) entirely.
 - **Now blocked on:** Nothing (no open Q- items).
-- **Next action:** Run /project-implement and select R-13/R-14/R-15 -- all three have a verified, low-risk fix already spelled out in their acceptance/body text.
+- **Next action:** Either verify R-17 with a dedicated reconnect-across-games test (cheap, since R-16's Lobby.reconnect() already tries every tracked game), or move to M-2 (R-5: the MCTS-guided self-play training loop -- the big one, likely needs decomposition).
 
 ## 2. Problem
 
