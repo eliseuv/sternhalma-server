@@ -8,6 +8,19 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-16: Review pass (unguided, agenda from the command argument
+  "breakdown large tasks and goals into smaller more well defined required
+  steps"). Decomposed R-5 (MCTS-guided self-play training loop) into a
+  6-step sequenced chain (R-18..R-23: action encoding, MCTS search,
+  self-play generation, replay buffer, training step, main.py wiring) --
+  reading SternhalmaZero's fixed-size policy head against the server's
+  variable-length move list surfaced a real, previously-undecided design
+  question (how policy scores map to actual moves), resolved as a flat
+  121x121 (source,target) action matrix rather than a direction/hop-count
+  grid, since the latter can't represent chain-hop moves. Decomposed R-2
+  into R-24/R-25/R-26; confirmed its 4th check (input normalization)
+  already satisfied by from_state, not re-queued. No source changed;
+  that's /project-implement's job.
 - 2026-09-16: Implemented R-12 -- sternhalma-agent's board-state tracking
   now goes through sternhalma_rs instead of its own from-scratch Board
   reimplementation (D-2 complete). Found and fixed a real bug in the

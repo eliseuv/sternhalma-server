@@ -21,9 +21,9 @@ updated: 2026-09-16
      - **Now blocked on:** ...
      - **Next action:** ... -->
 
-- **Last session:** Implemented R-13 (sternhalma-python clippy/fmt), R-14 (pytest collection fix), R-15 (reject length-1 Hops paths). Decomposed R-4 into R-16 (Lobby core, done -- sternhalma-server now supports concurrent games) and R-17 (cross-game reconnection, deferred but likely already satisfied by R-16's design -- not verified). Implemented R-12 (agent migrated onto sternhalma_rs bindings), closing M-1 (Preparation) entirely.
+- **Last session:** Decomposed the two remaining oversized items per the user's request. R-5 (MCTS-guided self-play training loop, previously one unmeasurable acceptance) split into a 6-step sequenced chain: R-18 (fixed 121x121 action encoding + legal-move masking), R-19 (MCTS search), R-20 (self-play generation), R-21 (replay buffer), R-22 (training step + target-network sync), R-23 (wire main.py --train). R-2 (4-check bundle) split into R-24/R-25/R-26 (loss logging, replay-buffer test, target-sync test); its 4th check (input normalization) was confirmed already satisfied by from_state's existing binary masks and not re-queued. R-1/R-3/R-9/R-10's stale refs to the now-superseded R-5 were repointed at the specific new slice each actually depends on.
 - **Now blocked on:** Nothing (no open Q- items).
-- **Next action:** Either verify R-17 with a dedicated reconnect-across-games test (cheap, since R-16's Lobby.reconnect() already tries every tracked game), or move to M-2 (R-5: the MCTS-guided self-play training loop -- the big one, likely needs decomposition).
+- **Next action:** Start M-2 with R-18 (the action encoding) -- it's the one every other Learning-phase item depends on, directly or transitively.
 
 ## 2. Problem
 
@@ -85,14 +85,14 @@ stops two async participants from silently using one word for two things._
 - status: specified
 - acceptance: A potential/heuristic function exists and measurably influences agent move selection (e.g. biases MCTS priors or rollout evaluation toward stronger moves), per the todo's own phrasing.
 - covers: [G-3]
-- refs: [R-5]
+- refs: [R-19]
 
 From sternhalma-agent/todo.md's General section: "Implement some kind of potential function to guide the agent to the best moves." No concrete target specified yet.
 
 Depends on R-5 (the self-play training loop doesn't exist yet; this item refines it once it does).
 
 ### R-2 — Add correctness checks for the agent training loop
-- status: specified
+- status: superseded
 - acceptance: All four hold: (1) training loss is printed/logged every step; (2) a test confirms the replay buffer stores and samples transitions correctly; (3) a test confirms target-network weights are copied from the evaluation network on the configured schedule; (4) board state inputs fed to the network are normalized rather than raw arbitrary IDs.
 - covers: [G-3]
 - refs: [R-5]
@@ -105,11 +105,13 @@ From sternhalma-agent/todo.md's Testing section ("avoid silent failures where th
 
 Depends on R-5 (the self-play training loop doesn't exist yet; this item refines it once it does).
 
+Point 4 (board inputs normalized) is already satisfied: alphazero.py's from_state emits binary 0.0/1.0 mask channels (via sternhalma_rs.Game.board()), not raw arbitrary IDs -- confirmed by reading the code, not carried forward as a new item. Points 1-3 became R-24/R-25/R-26.
+
 ### R-3 — Support a smaller/reduced board variant for faster iteration
 - status: specified
 - acceptance: The game/agent can be configured to run on a board smaller than the standard 121-cell board, reducing the training/testing state space.
 - covers: [G-3]
-- refs: [R-5]
+- refs: [R-23]
 
 From the old vault note (now this repo's .claude/PROJECT.md): reduced state space for faster training/testing iteration. No concrete board size specified yet.
 
@@ -125,7 +127,7 @@ State-space context, carried over from the old vault note: full board has $N = \
 Explicitly named as a future direction in sternhalma-server/README.md: currently configured for a single game session; architecture is designed to support this.
 
 ### R-5 — Implement MCTS-guided self-play training loop
-- status: specified
+- status: superseded
 - covers: [G-3]
 - acceptance: SternhalmaZero's policy/value outputs drive a Monte Carlo Tree Search over available moves; self-play games generate training data via a replay buffer; the network is optimized against that data with a target-network update schedule. main.py's --train flag actually trains, rather than being a no-op.
 
@@ -158,7 +160,7 @@ Three TODOs in sternhalma-server/src/lib.rs (lines ~117, ~301, ~310) mark this a
 ### R-9 — Benchmark sternhalma-game's core operations for self-play throughput
 - status: implemented
 - covers: [G-1, G-3]
-- refs: [R-5, R-7]
+- refs: [R-20, R-23, R-7]
 - acceptance: Move generation and move application are benchmarked (e.g. via criterion); a concrete throughput target is set once R-5's self-play loop exists and reveals the actual required moves/sec, since self-play calls this in a tight loop millions of times per training iteration.
 
 From DIRECTIONS.md: "make this crate very robust and performant." No target invented yet — deliberately deferred until there's a real self-play loop to calibrate against, per the same judgment already applied to R-3's board size.
@@ -168,7 +170,7 @@ Measured (release build, this machine): game_iter_available_moves ~2.1us/call, b
 ### R-10 — Implement checkpoint-gating evaluation harness for self-play training
 - status: specified
 - covers: [G-6]
-- refs: [R-5]
+- refs: [R-23]
 - acceptance: After each training iteration, the new checkpoint plays a fixed number of evaluation games against the previous best checkpoint; if it wins >=55%, it replaces the best network used for subsequent self-play generation.
 
 Implements G-6. Depends on R-5 existing first.
@@ -241,6 +243,81 @@ Also routes reconnection across concurrent games (tries each tracked game's sess
 
 Second slice of R-4. Depends on R-16's Lobby existing first -- today each Server's own sessions: HashMap<Uuid, Player> only makes sense when there's exactly one game.
 
+### R-18 — Define a fixed action encoding for the policy head and translate to/from the server's move list
+- status: specified
+- covers: [G-3]
+- supersedes: [R-5]
+- acceptance: SternhalmaZero's policy head scores a fixed 121x121 (source-cell, target-cell) action space; a function maps this to/from the server's current-turn (from,to) move list, masking illegal actions and renormalizing over the legal ones. Verified by a unit test: masking+renormalizing a known policy vector against a known move list produces a distribution summing to 1 over exactly the legal moves.
+
+First slice of R-5. Refines the user's chosen approach (fixed move-type grid, masked per turn) into something concrete: a (source-cell x direction x hop-distance) grid, as first proposed, can't cleanly represent chain-hop moves -- sternhalma-game's own MovementIndices already compresses a chain hop down to just [start, end] with no fixed direction/distance relationship between them, so a flat 121x121 (source,target) matrix is used instead. Strictly more general (handles chain hops uniformly) and simpler to implement than the direction/distance framing originally sketched.
+
+### R-19 — Implement MCTS search using SternhalmaZero's policy/value outputs
+- status: specified
+- covers: [G-3]
+- acceptance: A MCTS implementation (selection via UCB using policy priors, expansion, leaf evaluation via SternhalmaZero's value head, backup) selects a move given a game state and a SternhalmaZero network; a test confirms it returns a legal move from the current available-moves list within a bounded number of simulations.
+- refs: [R-18]
+
+Second slice of R-5.
+
+### R-20 — Implement self-play game generation
+- status: specified
+- covers: [G-3]
+- acceptance: A self-play routine plays a complete game of SternhalmaZero (via MCTS) against itself, recording each turn's (board tensor, MCTS visit-count policy target, eventual game outcome) as a training example.
+- refs: [R-19]
+
+Third slice of R-5.
+
+### R-21 — Implement a replay buffer for self-play training data
+- status: specified
+- covers: [G-3]
+- acceptance: A replay buffer stores (state, policy, outcome) training examples from self-play games and supports random-sampling a training batch; a fixed capacity with oldest-eviction (or similar) keeps memory bounded.
+- refs: [R-20]
+
+Fourth slice of R-5.
+
+### R-22 — Implement the training step with target-network updates
+- status: specified
+- covers: [G-3]
+- acceptance: A training step samples a batch from the replay buffer, computes the AlphaZero loss (policy cross-entropy + value MSE) against SternhalmaZero's evaluation network, and performs an optimizer step; a separate target network's weights are synced from the evaluation network on a configured interval.
+- refs: [R-21]
+
+Fifth slice of R-5.
+
+### R-23 — Wire main.py --train to run the full self-play/train loop
+- status: specified
+- covers: [G-3]
+- acceptance: Running main.py --train repeatedly generates self-play games, stores them in the replay buffer, and runs training steps on a configured schedule, saving model checkpoints periodically -- no longer a no-op.
+- refs: [R-18, R-19, R-20, R-21, R-22]
+
+Sixth and final slice of R-5, tying the previous five together.
+
+### R-24 — Log training loss at each training step
+- status: specified
+- covers: [G-3]
+- supersedes: [R-2]
+- refs: [R-22]
+- acceptance: Each training step (R-22) logs/prints its computed loss value (policy and value components) so training progress is observable without instrumenting code.
+
+First of R-2's three still-open checks (point 4 was already satisfied, see R-2's body).
+
+### R-25 — Test replay buffer stores and samples transitions correctly
+- status: specified
+- covers: [G-3]
+- supersedes: [R-2]
+- refs: [R-21]
+- acceptance: A test confirms the replay buffer (R-21) returns exactly what was pushed into it (no corruption, correct shapes) and that sampling respects the configured batch size.
+
+Second of R-2's three still-open checks.
+
+### R-26 — Test target-network sync schedule
+- status: specified
+- covers: [G-3]
+- supersedes: [R-2]
+- refs: [R-22]
+- acceptance: A test confirms the target network's weights match the evaluation network's immediately after a scheduled sync interval, and can differ between syncs.
+
+Third of R-2's three still-open checks.
+
 ## 8. Interfaces
 
 _The externally visible contract: CLI surface, API shapes, file formats, exit
@@ -290,9 +367,11 @@ Updated after R-6 was decomposed into R-11 (packaging, done) and R-12 (the migra
 
 ### M-2 — Learning: implement the AlphaZero-compatible training architecture
 - status: planned
-- covers: [R-5]
+- covers: [R-18, R-19, R-20, R-21, R-22, R-23]
 
 From DIRECTIONS.md's Learning section. R-5 is the whole of this milestone: MCTS-guided self-play wiring SternhalmaZero into actual move selection and training, which R-1/R-2/R-3 then refine.
+
+Updated after R-5 was decomposed into R-18..R-23 (a sequenced chain: action encoding, MCTS search, self-play generation, replay buffer, training step, main.py wiring). R-1/R-24/R-25/R-26 (formerly folded under R-2) refine this milestone once it lands, but aren't required for it to count as done.
 
 ### M-3 — Improvement: real-world self-play benchmarking
 - status: planned
@@ -358,3 +437,24 @@ _Append-only. Newest at the bottom._
 - 2026-09-16 — R-12 status: specified -> implemented
 - 2026-09-16 — R-12 refs: [R-11] -> [R-11]
 - 2026-09-16 — M-1 status: planned -> done
+- 2026-09-16 — R-5 status: specified -> superseded
+- 2026-09-16 — added R-18: Define a fixed action encoding for the policy head and translate to/from the server's move list
+- 2026-09-16 — added R-19: Implement MCTS search using SternhalmaZero's policy/value outputs
+- 2026-09-16 — added R-20: Implement self-play game generation
+- 2026-09-16 — added R-21: Implement a replay buffer for self-play training data
+- 2026-09-16 — added R-22: Implement the training step with target-network updates
+- 2026-09-16 — added R-23: Wire main.py --train to run the full self-play/train loop
+- 2026-09-16 — R-19 refs: ∅ -> [R-18]
+- 2026-09-16 — R-20 refs: ∅ -> [R-19]
+- 2026-09-16 — R-21 refs: ∅ -> [R-20]
+- 2026-09-16 — R-22 refs: ∅ -> [R-21]
+- 2026-09-16 — R-23 refs: ∅ -> [R-18,R-19,R-20,R-21,R-22]
+- 2026-09-16 — R-1 refs: [R-5] -> [R-19]
+- 2026-09-16 — R-10 refs: [R-5] -> [R-23]
+- 2026-09-16 — R-2 status: specified -> superseded
+- 2026-09-16 — added R-24: Log training loss at each training step
+- 2026-09-16 — added R-25: Test replay buffer stores and samples transitions correctly
+- 2026-09-16 — added R-26: Test target-network sync schedule
+- 2026-09-16 — M-2 covers: [R-5] -> [R-18,R-19,R-20,R-21,R-22,R-23]
+- 2026-09-16 — R-3 refs: [R-5] -> [R-23]
+- 2026-09-16 — R-9 refs: [R-5, R-7] -> [R-20,R-23,R-7]
