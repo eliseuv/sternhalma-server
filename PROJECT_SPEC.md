@@ -200,7 +200,7 @@ Second slice of R-6 -- the actual code migration this was originally about. Bloc
 Found while verifying R-11 (this crate was never checked with -D warnings before): 4 clippy errors and 3 formatting diffs, all in sternhalma-python/src/lib.rs. Confirmed pre-existing on the commit before R-11 too. Purely style/lint -- no behavior change, verified the exact clippy suggestions above by running clippy directly.
 
 ### R-14 — Fix sternhalma-agent's pytest collection failure
-- status: specified
+- status: implemented
 - covers: [G-3]
 - acceptance: uv run pytest inside sternhalma-agent collects and runs tests/test_integration.py without a ModuleNotFoundError.
 
@@ -210,6 +210,8 @@ Fix verified in a throwaway edit, reverted before writing this item: adding
   [tool.pytest.ini_options]
   pythonpath = ["."]
 to sternhalma-agent/pyproject.toml (pytest's built-in pythonpath option, no new dependency) makes 'uv run pytest' collect and pass the one existing test.
+
+Verified: uv run pytest collects and passes (1 passed), ruff check clean. basedpyright still reports 5 pre-existing errors + 145 warnings in tests/test_integration.py (uninitialized test-fixture attributes, unrelated to pythonpath) -- not fixed, out of scope for this item.
 
 ### R-15 — Reject length-1 Hops paths in sternhalma-game's validate_movement
 - status: specified
@@ -326,3 +328,4 @@ _Append-only. Newest at the bottom._
 - 2026-09-15 — added R-14: Fix sternhalma-agent's pytest collection failure
 - 2026-09-15 — added R-15: Reject length-1 Hops paths in sternhalma-game's validate_movement
 - 2026-09-15 — R-13 status: specified -> implemented
+- 2026-09-15 — R-14 status: specified -> implemented

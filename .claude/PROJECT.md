@@ -8,6 +8,11 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-15: Implemented R-14 — sternhalma-agent's pytest now collects and
+  passes tests/test_integration.py (added `pythonpath = ["."]` under
+  `[tool.pytest.ini_options]`). Found, but did not fix (unrelated,
+  pre-existing): basedpyright reports 5 errors and 145 warnings in that
+  same test file, mostly uninitialized test-fixture attributes.
 - 2026-09-15: Implemented R-13 — sternhalma-python (sternhalma_rs) now passes
   cargo clippy -D warnings and cargo fmt --check: factored the repeated
   ((usize,usize),(usize,usize)) return type into a PyMovement alias, replaced
