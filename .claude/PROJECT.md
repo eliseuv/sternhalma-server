@@ -8,6 +8,16 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-15: Decomposed R-6 into R-11 (packaging groundwork) and R-12 (the
+  actual code migration, blocked on R-11). Implemented R-11: sternhalma-python
+  is now an installable module (sternhalma-rs, pyproject.toml + maturin), and
+  sternhalma-agent depends on it via a uv path source. Added cargo/rustc/
+  maturin to sternhalma-agent's flake devshell to make `uv sync` able to
+  build it. Verified end-to-end: `import sternhalma_rs` works and returns
+  real game state from the agent's venv. Found a pre-existing, unrelated
+  test-collection failure in tests/test_integration.py (missing `client`
+  module on path) while verifying -- confirmed present before this change
+  too, not fixed here.
 - 2026-09-15: Implemented R-8 — sternhalma-server now sends an
   `invalid_request` message back to the offending client on an out-of-turn
   move or an out-of-range movement index, instead of only logging

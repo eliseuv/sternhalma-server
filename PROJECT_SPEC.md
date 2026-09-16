@@ -132,7 +132,7 @@ Explicitly named as a future direction in sternhalma-server/README.md: currently
 Currently missing entirely: no MCTS implementation exists anywhere in sternhalma-agent, main.py's training_mode branch is `if training_mode: pass`, and AgentConstant/AgentDQN/AgentBrownian are stub or trivial agents (AgentDQN.decide_movement always returns 0, self.nn is never used). alphazero.py only defines the network architecture (ResBlock, SternhalmaZero) and state encoding (from_state) — nothing consumes them for search or training yet. R-1, R-2 and R-3 (from the old todo.md) assume refining an existing training loop; this item is their actual prerequisite.
 
 ### R-6 — Migrate sternhalma-agent to use sternhalma_rs bindings instead of its own Python game-rules reimplementation
-- status: specified
+- status: superseded
 - covers: [G-3]
 - from: [D-2]
 - acceptance: Agent's board-state tracking and move application (currently in sternhalma-agent/sternhalma.py's Board/Player/movement code) go through sternhalma_rs via sternhalma-python instead; the independent Python reimplementation is removed once migrated.
@@ -172,6 +172,25 @@ Measured (release build, this machine): game_iter_available_moves ~2.1us/call, b
 - acceptance: After each training iteration, the new checkpoint plays a fixed number of evaluation games against the previous best checkpoint; if it wins >=55%, it replaces the best network used for subsequent self-play generation.
 
 Implements G-6. Depends on R-5 existing first.
+
+### R-11 — Package sternhalma-python as an installable Python module and wire it as a uv dependency of sternhalma-agent
+- status: implemented
+- covers: [G-3]
+- supersedes: [R-6]
+- acceptance: sternhalma-python has a maturin-backed pyproject.toml; sternhalma-agent's uv project depends on it via a local path source; `uv sync` inside sternhalma-agent builds the Rust extension and `import sternhalma_rs` succeeds in its venv.
+
+First slice of R-6, split off because it's packaging/build-tooling groundwork (maturin + uv path dependency across a Rust crate and a uv-managed Python project), not a code migration -- currently unwritten: sternhalma-python has no pyproject.toml at all, and neither flake.nix has maturin. Needs a flake change, which per standing instructions gets asked about before being made.
+
+Found a pre-existing, unrelated test-collection failure while verifying (tests/test_integration.py: ModuleNotFoundError: No module named 'client') -- confirmed present before this change too (checked via git stash). Not fixed here, out of scope for R-11.
+
+### R-12 — Migrate sternhalma-agent's board-state tracking onto sternhalma_rs bindings
+- status: specified
+- covers: [G-3]
+- supersedes: [R-6]
+- acceptance: Agent's board-state tracking and move application go through sternhalma_rs instead of sternhalma-agent/sternhalma.py's independent Board/Player/movement reimplementation; that reimplementation is removed once migrated.
+- refs: [R-11]
+
+Second slice of R-6 -- the actual code migration this was originally about. Blocked on the packaging slice existing first (see the sibling R- item this was split alongside).
 
 ## 8. Interfaces
 
@@ -269,3 +288,8 @@ _Append-only. Newest at the bottom._
 - 2026-09-15 — R-7 status: specified -> implemented
 - 2026-09-15 — R-9 status: specified -> implemented
 - 2026-09-15 — R-8 status: specified -> implemented
+- 2026-09-15 — R-6 status: specified -> superseded
+- 2026-09-15 — added R-11: Package sternhalma-python as an installable Python module and wire it as a uv dependency of sternhalma-agent
+- 2026-09-15 — added R-12: Migrate sternhalma-agent's board-state tracking onto sternhalma_rs bindings
+- 2026-09-15 — R-12 refs: ∅ -> [R-11]
+- 2026-09-15 — R-11 status: specified -> implemented

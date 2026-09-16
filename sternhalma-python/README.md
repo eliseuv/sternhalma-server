@@ -4,7 +4,19 @@ This crate serves as a wrapper for the Sternhalma game crate, allowing the core 
 
 ## Installation
 
-To use this module locally, use `maturin` to build and install it into your active python environment:
+This crate is packaged as an installable Python module (`sternhalma-rs`, importable as `sternhalma_rs`) via `pyproject.toml` + `maturin`. Any `uv`-managed project in this workspace can depend on it directly as a local path dependency:
+
+```toml
+# pyproject.toml
+dependencies = ["sternhalma-rs"]
+
+[tool.uv.sources]
+sternhalma-rs = { path = "../sternhalma-python", editable = true }
+```
+
+`uv sync` then builds and installs it -- see `sternhalma-agent/flake.nix` for the `cargo`/`rustc`/`maturin` devshell packages this requires.
+
+To build and install it manually into an already-active Python environment instead:
 ```bash
 pip install maturin
 maturin develop

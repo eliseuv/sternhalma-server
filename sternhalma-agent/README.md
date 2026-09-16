@@ -23,6 +23,8 @@ This project uses [`uv`](https://github.com/astral-sh/uv) for dependency managem
 uv sync
 ```
 
+This includes `sternhalma-rs` (`../sternhalma-python`), the Rust game engine's Python bindings, built from source via `maturin` as part of `uv sync` -- requires the `cargo`/`rustc`/`maturin` packages in this project's `flake.nix` devshell.
+
 ### Running Tests
 
 To verify the installation and current functionality:

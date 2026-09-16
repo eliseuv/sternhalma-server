@@ -1,0 +1,13 @@
+[build-system]
+requires = ["maturin>=1,<2"]
+build-backend = "maturin"
+
+[project]
+name = "sternhalma-rs"
+version = "0.1.0"
+description = "Python bindings for the sternhalma-game Rust crate"
+requires-python = ">=3.13"
+
+[tool.maturin]
+module-name = "sternhalma_rs"
+features = ["pyo3/extension-module"]

@@ -488,6 +488,7 @@ dependencies = [
     { name = "numpy" },
     { name = "scikit-learn" },
     { name = "scipy" },
+    { name = "sternhalma-rs" },
     { name = "torch" },
 ]
 
@@ -502,11 +503,17 @@ requires-dist = [
     { name = "numpy" },
     { name = "scikit-learn" },
     { name = "scipy" },
+    { name = "sternhalma-rs", editable = "../sternhalma-python" },
     { name = "torch" },
 ]
 
 [package.metadata.requires-dev]
 dev = [{ name = "pytest", specifier = ">=9.0.2" }]
+
+[[package]]
+name = "sternhalma-rs"
+version = "0.1.0"
+source = { editable = "../sternhalma-python" }
 
 [[package]]
 name = "sympy"

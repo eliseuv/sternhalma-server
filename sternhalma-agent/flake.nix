@@ -60,6 +60,12 @@
 
             ruff
             basedpyright
+
+            # Rust toolchain + maturin, needed to build the sternhalma-rs
+            # (sternhalma-python) path dependency via uv sync.
+            cargo
+            rustc
+            maturin
           ];
 
           shellHook = ''
