@@ -21,9 +21,9 @@ updated: 2026-09-15
      - **Now blocked on:** ...
      - **Next action:** ... -->
 
-- **Last session:** Implemented R-7 (sternhalma-game unit tests), R-9 (engine throughput benchmarks), R-8 (server reports invalid client requests instead of silently dropping them), and R-11 (sternhalma-python packaged as a uv dependency of sternhalma-agent via maturin, verified end-to-end). R-6 was decomposed into R-11 (done) and R-12 (the actual code migration, deferred).
-- **Now blocked on:** Nothing (no open Q- items). R-12 is next but not blocked, just deferred.
-- **Next action:** R-12 -- migrate sternhalma-agent's board-state tracking (agent.py, alphazero.py, client/protocol.py all currently `from sternhalma import ...`, resolving to sternhalma-agent/sternhalma.py's independent reimplementation) onto sternhalma_rs, now that R-11 makes it importable. Also worth a future /project-review pass: sternhalma-python/src/lib.rs fails cargo clippy -D warnings and cargo fmt --check (pre-existing, found while verifying R-11, not fixed); tests/test_integration.py fails to collect (ModuleNotFoundError: No module named 'client', pre-existing); movement.rs has a documented validation gap (single_element_hops_path, from R-7).
+- **Last session:** Unguided review pass (DIRECTIONS.md empty), agenda driven by the command argument "fix the preexisting issues found" from the prior /project-implement session's handoff. Investigated and confirmed root causes for all three: sternhalma-python's clippy/fmt violations (R-13), sternhalma-agent's pytest collection failure (R-14, root cause: missing pythonpath ini option), and sternhalma-game's length-1 Hops validation gap (R-15). Verified R-14's fix in a throwaway edit, reverted before writing the item -- did not fix any of the three, since /project-review never touches source.
+- **Now blocked on:** Nothing (no open Q- items).
+- **Next action:** Run /project-implement and select R-13/R-14/R-15 -- all three have a verified, low-risk fix already spelled out in their acceptance/body text.
 
 ## 2. Problem
 
@@ -192,6 +192,32 @@ Found a pre-existing, unrelated test-collection failure while verifying (tests/t
 
 Second slice of R-6 -- the actual code migration this was originally about. Blocked on the packaging slice existing first (see the sibling R- item this was split alongside).
 
+### R-13 — Fix sternhalma-python's clippy and rustfmt violations
+- status: specified
+- covers: [G-2]
+- acceptance: cargo clippy -p sternhalma_rs --all-targets -- -D warnings and cargo fmt -p sternhalma_rs -- --check both pass. Specifically: factor the (usize,usize),(usize,usize)) return types in available_moves/history into a named type alias (clippy::type_complexity), replace the two unnecessary .try_into().unwrap() with .into() in the movement-index conversion (clippy::unnecessary_fallible_conversions), and apply rustfmt's line-wrapping/whitespace fixes to apply_movement/apply_movement_unchecked.
+
+Found while verifying R-11 (this crate was never checked with -D warnings before): 4 clippy errors and 3 formatting diffs, all in sternhalma-python/src/lib.rs. Confirmed pre-existing on the commit before R-11 too. Purely style/lint -- no behavior change, verified the exact clippy suggestions above by running clippy directly.
+
+### R-14 — Fix sternhalma-agent's pytest collection failure
+- status: specified
+- covers: [G-3]
+- acceptance: uv run pytest inside sternhalma-agent collects and runs tests/test_integration.py without a ModuleNotFoundError.
+
+Root cause confirmed: pytest inserts tests/ itself onto sys.path for rootless test files, not the project root, so tests/test_integration.py's 'from client.client import Client' can't find the root-level client/ package (this only works when running main.py/agent.py directly, since running a script adds its own directory to sys.path[0]).
+
+Fix verified in a throwaway edit, reverted before writing this item: adding
+  [tool.pytest.ini_options]
+  pythonpath = ["."]
+to sternhalma-agent/pyproject.toml (pytest's built-in pythonpath option, no new dependency) makes 'uv run pytest' collect and pass the one existing test.
+
+### R-15 — Reject length-1 Hops paths in sternhalma-game's validate_movement
+- status: specified
+- covers: [G-1]
+- acceptance: validate_movement returns Err(MovementError::ShortHopping(1)) for a Movement::Hops{path} of length 1, matching the existing length-0 case, instead of validating it as a no-op 'hop to the same cell'.
+
+Found and documented, not fixed, while adding R-7's test coverage (see movement.rs's single_element_hops_path_is_a_validation_gap_not_a_rejection test and its doc comment). Root cause: path.get(1..) returns Some(&[]) rather than None when path.len() == 1, so the ShortHopping check never fires for exactly that length. Not reachable via sternhalma-server (it only ever applies moves selected by index from its own precomputed move list, never an arbitrary client-supplied path), but is a latent correctness gap in the public validate_movement/apply_movement API that sternhalma-python and any future direct caller (e.g. a self-play harness) can hit. Fixing it means updating single_element_hops_path_is_a_validation_gap_not_a_rejection's assertion (it currently pins the buggy behavior) to expect the rejection instead.
+
 ## 8. Interfaces
 
 _The externally visible contract: CLI surface, API shapes, file formats, exit
@@ -296,3 +322,6 @@ _Append-only. Newest at the bottom._
 - 2026-09-15 — R-12 refs: ∅ -> [R-11]
 - 2026-09-15 — R-11 status: specified -> implemented
 - 2026-09-15 — M-1 covers: [R-6, R-7, R-8, R-9] -> [R-11,R-12,R-7,R-8,R-9]
+- 2026-09-15 — added R-13: Fix sternhalma-python's clippy and rustfmt violations
+- 2026-09-15 — added R-14: Fix sternhalma-agent's pytest collection failure
+- 2026-09-15 — added R-15: Reject length-1 Hops paths in sternhalma-game's validate_movement

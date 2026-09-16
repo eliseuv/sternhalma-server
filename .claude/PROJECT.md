@@ -8,6 +8,13 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-15: Review pass (unguided, agenda from the prior session's
+  command argument): confirmed root causes and wrote up fixes for the three
+  pre-existing issues flagged last session -- sternhalma-python's
+  clippy/fmt violations (R-13), sternhalma-agent's pytest collection
+  failure (R-14, missing `pythonpath` ini option), and sternhalma-game's
+  length-1 Hops validation gap (R-15). No source changed; that's
+  /project-implement's job.
 - 2026-09-15: Decomposed R-6 into R-11 (packaging groundwork) and R-12 (the
   actual code migration, blocked on R-11). Implemented R-11: sternhalma-python
   is now an installable module (sternhalma-rs, pyproject.toml + maturin), and
