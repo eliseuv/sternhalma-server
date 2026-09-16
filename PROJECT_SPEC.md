@@ -21,9 +21,9 @@ updated: 2026-09-16
      - **Now blocked on:** ...
      - **Next action:** ... -->
 
-- **Last session:** Implemented R-17 (confirmed R-16's Lobby.reconnect() already routes cross-game reconnection correctly, added the verification test), R-21 (replay buffer), R-20 (self-play game generation -- extended mcts.py with search_with_policy() to expose the visit-count policy target), R-25 (dedicated replay buffer test suite). Real finding: a self-play game under weak/untrained play didn't reach a natural finish within 150-500 turns in manual verification runs -- DEFAULT_MAX_TURNS=300 in self_play.py is an untuned placeholder, and this concretely motivates the R-27..R-29 board-size track.
+- **Last session:** Implemented R-22 (training step + target-network sync), R-23 (wired main.py --train to run the full self-play/train loop -- closes M-2/Learning entirely), R-24 (loss logging), R-10 (checkpoint-gating harness), R-26 (dedicated target-network sync test). M-3 (Improvement) stays planned: R-10's harness exists but G-6 itself (a real checkpoint beating a prior one) needs an actual training run, which hasn't happened.
 - **Now blocked on:** Nothing (no open Q- items).
-- **Next action:** R-22 (training step + target-network sync) is the next required link in the M-2 chain -- depends on R-21 (done). It's the most involved remaining piece: batched policy cross-entropy + value MSE loss against action_space's 121x121 space, an optimizer, and a target-network sync schedule.
+- **Next action:** Only the R-27..R-29 board-size track remains in the queue (large, independent of everything above). R-27 first: make sternhalma-game's board size configurable -- the Rust engine's board arrays are compile-time fixed-size, real restructuring in sternhalma-game/src/board/lut.rs, not a parameter tweak. Otherwise, the codebase now has a complete (if untrained, untuned, and unwired-into-checkpoint-gating) AlphaZero pipeline -- a real training run would be the natural next non-spec milestone.
 
 ## 2. Problem
 
