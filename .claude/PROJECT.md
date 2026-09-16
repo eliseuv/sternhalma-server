@@ -3,11 +3,23 @@ status: active
 category: ai
 progress: 0  # unassessed
 started: 2025-06-19
-updated: 2026-09-15
+updated: 2026-09-16
 vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-16: Implemented R-12 -- sternhalma-agent's board-state tracking
+  now goes through sternhalma_rs instead of its own from-scratch Board
+  reimplementation (D-2 complete). Found and fixed a real bug in the
+  process: sternhalma_rs.Game always assumes its own Player 1 moves first,
+  which is false from a real Player 2 client's perspective (its opponent
+  moves first) -- the validating apply_movement() rejected the very first
+  mirrored move. Fixed with apply_movement_unchecked(), verified live
+  against the real server binary (237 successful moves, zero errors, both
+  client identities). alphazero.py's from_state now reads the bindings'
+  board() tensor directly, correcting for its turn-relative channel order
+  via a new player()==-1 check -- covered by two new deterministic unit
+  tests. This closes M-1 (Preparation): all of R-7/R-8/R-9/R-11/R-12 done.
 - 2026-09-15: Decomposed R-4 into R-16 (Lobby core, done) and R-17 (route
   reconnection across concurrent games, deferred). Implemented R-16:
   sternhalma-server now supports multiple concurrent games via a new Lobby

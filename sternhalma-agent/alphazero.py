@@ -1,13 +1,12 @@
 from typing import override
 import numpy as np
+import sternhalma_rs
 import torch as T
 import torch.nn as nn
 import torch.nn.functional as F
 
-from sternhalma import Board, Position
 
-
-def from_state(board: Board, device: str = "cuda") -> T.Tensor:
+def from_state(game: sternhalma_rs.Game, device: str = "cuda") -> T.Tensor:
     """
     Converts the board state to a canonical tensor representation for neural network input.
 
@@ -20,25 +19,20 @@ def from_state(board: Board, device: str = "cuda") -> T.Tensor:
     - Channel 2: Binary mask for all valid board positions (board geometry).
 
     Args:
-        board: The current board state (in relative coordinates).
+        game: The current game state (in relative coordinates, i.e. this
+            agent is always Player 1 -- see the client protocol).
         device: The device (e.g., "cpu", "cuda") where the tensor will be allocated.
 
     Returns:
         A tensor of shape (1, 3, 17, 17) ready for the network.
     """
-    tensor = np.zeros((3, 17, 17), dtype=np.float32)
-
-    # Determine masks based on player identity
-    # Channel 0 is always "me" (Player 1), Channel 1 is always "opponent" (Player 2)
-    # The board is assumed to be in relative coordinates where "me" == Player 1.
-    friend_mask = board.state == Position.Player1
-    enemy_mask = board.state == Position.Player2
-
-    # Set masks for each channel
-    tensor[0] = friend_mask.astype(np.float32)
-    tensor[1] = enemy_mask.astype(np.float32)
-    # Channel 2 is invariant (just valid positions)
-    tensor[2] = (board.state != Position.Invalid).astype(np.float32)
+    # sternhalma_rs.Game.board()'s channels 0/1 are relative to whichever
+    # player's turn it currently is, not fixed to Player 1 -- swap them back
+    # to a turn-independent "channel 0 == me" whenever it's locally Player
+    # 2's turn, to match this function's contract.
+    tensor = np.asarray(game.board())
+    if game.player() == -1:
+        tensor = tensor[[1, 0, 2]]
 
     # Convert to torch tensor, add batch dimension (N=1), and move to device
     return T.from_numpy(tensor.copy()).unsqueeze(0).to(device)

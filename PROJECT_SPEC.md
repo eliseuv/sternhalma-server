@@ -5,7 +5,7 @@ status: drafting
 category: ai
 language: rust
 created: 2025-06-19
-updated: 2026-09-15
+updated: 2026-09-16
 ---
 
 # Sternhalma AI
@@ -184,13 +184,15 @@ First slice of R-6, split off because it's packaging/build-tooling groundwork (m
 Found a pre-existing, unrelated test-collection failure while verifying (tests/test_integration.py: ModuleNotFoundError: No module named 'client') -- confirmed present before this change too (checked via git stash). Not fixed here, out of scope for R-11.
 
 ### R-12 — Migrate sternhalma-agent's board-state tracking onto sternhalma_rs bindings
-- status: specified
+- status: implemented
 - covers: [G-3]
 - supersedes: [R-6]
 - acceptance: Agent's board-state tracking and move application go through sternhalma_rs instead of sternhalma-agent/sternhalma.py's independent Board/Player/movement reimplementation; that reimplementation is removed once migrated.
 - refs: [R-11]
 
 Second slice of R-6 -- the actual code migration this was originally about. Blocked on the packaging slice existing first (see the sibling R- item this was split alongside).
+
+Found and fixed a real bug while implementing this: sternhalma_rs.Game always assumes its own Player 1 moves first, but for a real Player 2 client the opponent moves first (mismatched with the mirror's hardcoded turn order) -- the validating apply_movement() rejected the very first mirrored move with ValueError('Invalid movement'). Fixed by using apply_movement_unchecked() instead (matches the old Board's blind, unvalidated mirroring). Verified live against the real server binary: 237 successful moves across a real multi-turn game for both clients, zero errors. Known limitation, documented in agent.py: self.board's own turn/score bookkeeping (player()/turns()/scores()) is not reliable ground truth for a real Player 2 client -- only its board() tensor is, which from_state's existing channel-swap (added with R-12) correctly compensates for.
 
 ### R-13 — Fix sternhalma-python's clippy and rustfmt violations
 - status: implemented
@@ -279,7 +281,7 @@ User's explicit direction: "There should be a core high performance rust impleme
 <!-- items: M -->
 
 ### M-1 — Preparation: dedupe game rules, harden and benchmark the engine, fix small bugs
-- status: planned
+- status: done
 - covers: [R-11, R-12, R-7, R-8, R-9]
 
 From DIRECTIONS.md's Preparation section. Groups: remove the agent's duplicate Python rules (R-6, implementing D-2), add robust/property test coverage and a throughput benchmark to sternhalma-game (R-7, R-9), and fix the server's silent-drop of invalid client requests (R-8).
@@ -353,3 +355,6 @@ _Append-only. Newest at the bottom._
 - 2026-09-15 — added R-16: Add a Lobby that spawns an independent Server per match
 - 2026-09-15 — added R-17: Route session reconnection across concurrent games
 - 2026-09-15 — R-16 status: specified -> implemented
+- 2026-09-16 — R-12 status: specified -> implemented
+- 2026-09-16 — R-12 refs: [R-11] -> [R-11]
+- 2026-09-16 — M-1 status: planned -> done
