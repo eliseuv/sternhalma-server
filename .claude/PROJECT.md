@@ -7,34 +7,21 @@ updated: 2026-09-15
 vault_ref: chinese-checkers-ai
 ---
 
-## About
-This project implements the AlphaZero algorithm from scratch to master the
-game of **Sternhalma** (commonly known as Chinese Checkers). It covers the
-whole stack: the Rust game engine and server (`sternhalma-game`,
-`sternhalma-server`), Python bindings onto that engine (`sternhalma-python`,
-including a safe wrapper client at `sternhalma-python/client`), the AlphaZero
-agent (`sternhalma-agent`), and a React/TypeScript web client
-(`sternhalma-web`). Formerly three separate repos, merged into this one on
-2026-09-15 with full commit history preserved via git subtree merges.
-
-## Notes
-Carried over from the original "Sternhalma" note in the old vault:
-
-### State graph
-Total number of nodes:
-$$N = \frac{121!}{(121-30)!15!15!} \approx 3.5 \times 10^{36}$$
-$$\log_2 N \approx 121.4$$
-
-#### Questions
-1. Is a board configuration tied to a given player's turn?
-
-### Concepts
-- Policy network: Provides move priors for MCTS.
-
-### Todo
-- Smaller board (reduced state space for faster iteration/testing).
-
 ## Log
+- 2026-09-15: Migrated tracking from the legacy `.claude/PROJECT.md` shape
+  (About/Notes/Log) to `PROJECT_SPEC.md` + `DIRECTIONS.md`. The About
+  paragraph's content now lives in the root `README.md` and `PROJECT_SPEC.md`'s
+  Goals; the Notes section's state-graph math moved into R-3's body, its open
+  question ("is a board configuration tied to a given player's turn?") was
+  resolved as D-1 (yes — canonicalized to the current player's perspective),
+  and its todo item became R-3. Audit (unguided pass, `DIRECTIONS.md` was
+  empty) found: the AlphaZero training loop doesn't exist yet — no MCTS, no
+  self-play, `main.py --train` is a no-op (now R-5); the agent duplicates game
+  rules in a from-scratch Python reimplementation instead of using the Rust
+  bindings, per the user's direction that Python consumers should use bindings
+  rather than reimplement rules (D-2, R-6); `sternhalma-game` has no unit
+  tests of its own (R-7); three TODOs in `sternhalma-server` silently drop
+  invalid client requests instead of reporting them (R-8).
 - 2026-09-15: Merged the sibling `sternhalma-agent` and `sternhalma-web` repos
   into this repo via git subtree merge, preserving full commit history from
   both. Moved the pre-existing Python bindings client wrapper from
