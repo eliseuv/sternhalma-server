@@ -1,7 +1,7 @@
 import random
 from typing import Any
 
-from sternhalma import SternhalmaGame, Move, print_board
+from sternhalma_client.sternhalma import SternhalmaGame, Move, print_board
 
 def main() -> None:
     print("Initializing Sternhalma game using safe wrapper...")
