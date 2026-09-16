@@ -8,6 +8,10 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-16: Implemented R-25 -- dedicated test suite for R-21's replay
+  buffer (tests/test_replay_buffer.py): exact push/sample round-tripping
+  with no field mix-up between examples, capacity eviction, batch-size and
+  without-replacement sampling, and the over-request ValueError.
 - 2026-09-16: Implemented R-20 -- sternhalma-agent has self-play game
   generation (self_play.py): plays a full game via MCTS against itself,
   recording a training example per turn, outcome backfilled from the

@@ -331,7 +331,7 @@ First of R-2's three still-open checks (point 4 was already satisfied, see R-2's
 Complexity: trivial. A logging statement inside R-22's training step, once it exists.
 
 ### R-25 — Test replay buffer stores and samples transitions correctly
-- status: specified
+- status: implemented
 - covers: [G-3]
 - supersedes: [R-2]
 - refs: [R-21]
@@ -537,3 +537,4 @@ _Append-only. Newest at the bottom._
 - 2026-09-16 — R-17 status: specified -> implemented
 - 2026-09-16 — R-21 status: specified -> implemented
 - 2026-09-16 — R-20 status: specified -> implemented
+- 2026-09-16 — R-25 status: specified -> implemented
