@@ -21,13 +21,9 @@ updated: 2026-09-16
      - **Now blocked on:** ...
      - **Next action:** ... -->
 
-- **Last session:** Reorganized the 10 outstanding requirements by complexity (agenda from the command argument). R-3 (smaller board) turned out to be another large task disguised as one item -- decomposed into R-27 (Rust board size configurable, large), R-28 (expose via bindings, small-medium), R-29 (confirm agent-side adapts, small -- likely pure verification since action_space.py/heuristic.py already derive their constants at runtime). Every other outstanding item got a Complexity: note in its body.
+- **Last session:** Implemented R-17 (confirmed R-16's Lobby.reconnect() already routes cross-game reconnection correctly, added the verification test), R-21 (replay buffer), R-20 (self-play game generation -- extended mcts.py with search_with_policy() to expose the visit-count policy target), R-25 (dedicated replay buffer test suite). Real finding: a self-play game under weak/untrained play didn't reach a natural finish within 150-500 turns in manual verification runs -- DEFAULT_MAX_TURNS=300 in self_play.py is an untuned placeholder, and this concretely motivates the R-27..R-29 board-size track.
 - **Now blocked on:** Nothing (no open Q- items).
-- **Next action, by complexity:**
-  - Small, unblocked now: R-17 (cross-game reconnection -- likely just needs a test), R-21 (replay buffer).
-  - Medium, unblocked now: R-20 (self-play generation -- R-18/R-19/R-1 are all done).
-  - Then in chain order: R-22 (medium-large, needs R-21) -> R-23 (medium, needs R-20/21/22) -> R-24/R-25/R-26 (trivial/small, pick up as their prerequisite lands) -> R-10 (medium, needs R-23).
-  - Large standalone track, independent of the above, tackle whenever: R-27 -> R-28 -> R-29 (board-size configurability).
+- **Next action:** R-22 (training step + target-network sync) is the next required link in the M-2 chain -- depends on R-21 (done). It's the most involved remaining piece: batched policy cross-entropy + value MSE loss against action_space's 121x121 space, an optimizer, and a target-network sync schedule.
 
 ## 2. Problem
 
