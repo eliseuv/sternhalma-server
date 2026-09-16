@@ -8,6 +8,9 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-16: Implemented R-24 -- Trainer.train_step now logs its loss and
+  the policy/value components at each call, so training progress is
+  observable without instrumenting code.
 - 2026-09-16: Implemented R-23 -- main.py --train now runs the full
   self-play/train loop (each iteration: self-play games, buffer them, train
   once the buffer holds enough for a batch, checkpoint on a schedule) via a

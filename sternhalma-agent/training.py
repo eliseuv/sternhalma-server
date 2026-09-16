@@ -3,6 +3,7 @@ samples, with a target network kept in sync on a configured interval.
 """
 
 import copy
+import logging
 
 import numpy as np
 import torch as T
@@ -67,6 +68,10 @@ class Trainer:
         self.optimizer.step()
 
         self.step_count += 1
+        logging.info(
+            f"Training step {self.step_count}: loss={float(loss.item()):.4f} "
+            f"(policy={float(policy_loss.item()):.4f}, value={float(value_loss.item()):.4f})"
+        )
         if self.step_count % self.target_sync_interval == 0:
             self.sync_target_network()
 

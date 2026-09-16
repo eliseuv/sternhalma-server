@@ -318,7 +318,7 @@ Sixth and final slice of R-5, tying the previous five together.
 Complexity: medium. Mostly plumbing once R-20/R-21/R-22 exist, but real plumbing: a training loop driving self-play -> buffer -> train on a schedule, plus checkpoint save/load and tracking which checkpoint self-play currently uses.
 
 ### R-24 — Log training loss at each training step
-- status: specified
+- status: implemented
 - covers: [G-3]
 - supersedes: [R-2]
 - refs: [R-22]
@@ -539,3 +539,4 @@ _Append-only. Newest at the bottom._
 - 2026-09-16 — R-22 status: specified -> implemented
 - 2026-09-16 — R-23 status: specified -> implemented
 - 2026-09-16 — M-2 status: planned -> done
+- 2026-09-16 — R-24 status: specified -> implemented

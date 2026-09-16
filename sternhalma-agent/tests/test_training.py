@@ -1,3 +1,5 @@
+import logging
+
 import torch as T
 
 from action_space import NUM_ACTIONS
@@ -43,3 +45,17 @@ def test_train_step_increments_step_count():
     assert trainer.step_count == 1
     trainer.train_step(buffer, batch_size=4)
     assert trainer.step_count == 2
+
+
+def test_train_step_logs_the_loss_and_its_components(caplog):
+    network = SternhalmaZero(board_size=17, num_actions=NUM_ACTIONS, num_res_blocks=1)
+    trainer = Trainer(network, target_sync_interval=1_000_000, device="cpu")
+    buffer = _buffer_with_examples(8)
+
+    with caplog.at_level(logging.INFO):
+        loss = trainer.train_step(buffer, batch_size=4)
+
+    [record] = [r for r in caplog.records if "Training step" in r.message]
+    assert f"loss={loss:.4f}" in record.message
+    assert "policy=" in record.message
+    assert "value=" in record.message
