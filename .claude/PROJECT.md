@@ -8,6 +8,12 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-15: Implemented R-13 — sternhalma-python (sternhalma_rs) now passes
+  cargo clippy -D warnings and cargo fmt --check: factored the repeated
+  ((usize,usize),(usize,usize)) return type into a PyMovement alias, replaced
+  two unnecessary try_into().unwrap() calls with .into(), applied rustfmt.
+  No behavior change, verified by re-running the sternhalma_rs smoke test
+  from the agent's venv.
 - 2026-09-15: Review pass (unguided, agenda from the prior session's
   command argument): confirmed root causes and wrote up fixes for the three
   pre-existing issues flagged last session -- sternhalma-python's

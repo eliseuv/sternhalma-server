@@ -1,6 +1,9 @@
 use numpy::PyArray3;
 use pyo3::prelude::*;
 
+/// A movement as a pair of (from, to) index tuples, as exposed to Python
+type PyMovement = ((usize, usize), (usize, usize));
+
 // Sternhalma Game
 #[pyclass]
 pub struct Game {
@@ -90,12 +93,12 @@ impl Game {
     }
 
     /// Get the available moves for the current player
-    fn available_moves(&self) -> PyResult<Vec<((usize, usize), (usize, usize))>> {
+    fn available_moves(&self) -> PyResult<Vec<PyMovement>> {
         Ok(self
             .game
             .iter_available_moves()
             .map(|m| sternhalma_game::movement::MovementIndices::from(&m))
-            .map(|[from, to]| (from.try_into().unwrap(), to.try_into().unwrap()))
+            .map(|[from, to]| (from.into(), to.into()))
             .collect())
     }
 
@@ -111,7 +114,9 @@ impl Game {
             .find(|m| sternhalma_game::movement::MovementIndices::from(m) == movement_indices);
 
         if let Some(movement) = movement {
-            self.game.apply_movement(&movement).map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{:?}", e)))?;
+            self.game
+                .apply_movement(&movement)
+                .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("{:?}", e)))?;
             Ok(())
         } else {
             Err(pyo3::exceptions::PyValueError::new_err("Invalid movement"))
@@ -119,11 +124,15 @@ impl Game {
     }
 
     /// Apply movement without validation
-    fn apply_movement_unchecked(&mut self, from: (usize, usize), to: (usize, usize)) -> PyResult<()> {
+    fn apply_movement_unchecked(
+        &mut self,
+        from: (usize, usize),
+        to: (usize, usize),
+    ) -> PyResult<()> {
         let from_idx = [from.0, from.1];
         let to_idx = [to.0, to.1];
         let movement_indices = [from_idx, to_idx];
-        
+
         unsafe {
             self.game.apply_movement_unchecked(&movement_indices);
         }
@@ -137,7 +146,7 @@ impl Game {
     }
 
     /// Get movement history
-    fn history(&self) -> PyResult<Vec<((usize, usize), (usize, usize))>> {
+    fn history(&self) -> PyResult<Vec<PyMovement>> {
         Ok(self
             .game
             .history()

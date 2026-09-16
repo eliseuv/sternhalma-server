@@ -193,7 +193,7 @@ Found a pre-existing, unrelated test-collection failure while verifying (tests/t
 Second slice of R-6 -- the actual code migration this was originally about. Blocked on the packaging slice existing first (see the sibling R- item this was split alongside).
 
 ### R-13 — Fix sternhalma-python's clippy and rustfmt violations
-- status: specified
+- status: implemented
 - covers: [G-2]
 - acceptance: cargo clippy -p sternhalma_rs --all-targets -- -D warnings and cargo fmt -p sternhalma_rs -- --check both pass. Specifically: factor the (usize,usize),(usize,usize)) return types in available_moves/history into a named type alias (clippy::type_complexity), replace the two unnecessary .try_into().unwrap() with .into() in the movement-index conversion (clippy::unnecessary_fallible_conversions), and apply rustfmt's line-wrapping/whitespace fixes to apply_movement/apply_movement_unchecked.
 
@@ -325,3 +325,4 @@ _Append-only. Newest at the bottom._
 - 2026-09-15 — added R-13: Fix sternhalma-python's clippy and rustfmt violations
 - 2026-09-15 — added R-14: Fix sternhalma-agent's pytest collection failure
 - 2026-09-15 — added R-15: Reject length-1 Hops paths in sternhalma-game's validate_movement
+- 2026-09-15 — R-13 status: specified -> implemented
