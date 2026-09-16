@@ -296,7 +296,7 @@ Complexity: small. A self-contained data structure (bounded-capacity buffer, pus
 Dedicated test coverage deferred to R-25 (its own selected item this session, same acceptance) rather than duplicated here -- spot-verified manually (push beyond capacity evicts oldest, sample() is without-replacement and raises when asked for more than the buffer holds).
 
 ### R-22 — Implement the training step with target-network updates
-- status: specified
+- status: implemented
 - covers: [G-3]
 - acceptance: A training step samples a batch from the replay buffer, computes the AlphaZero loss (policy cross-entropy + value MSE) against SternhalmaZero's evaluation network, and performs an optimizer step; a separate target network's weights are synced from the evaluation network on a configured interval.
 - refs: [R-21]
@@ -304,6 +304,8 @@ Dedicated test coverage deferred to R-25 (its own selected item this session, sa
 Fifth slice of R-5.
 
 Complexity: medium-large. The most involved piece of the chain still ahead: batched loss computation (policy cross-entropy over the 121x121 action space + value MSE), an optimizer, and a target-network sync schedule -- getting tensor shapes and the policy-target format consistent with action_space.py matters here.
+
+Dedicated target-network sync test coverage deferred to R-26 (its own selected item this session, same acceptance) rather than duplicated here -- spot-verified manually that the target network diverges from the evaluation network after a step below the sync interval and matches it again immediately after a step that crosses the interval.
 
 ### R-23 — Wire main.py --train to run the full self-play/train loop
 - status: specified
@@ -534,3 +536,4 @@ _Append-only. Newest at the bottom._
 - 2026-09-16 — R-21 status: specified -> implemented
 - 2026-09-16 — R-20 status: specified -> implemented
 - 2026-09-16 — R-25 status: specified -> implemented
+- 2026-09-16 — R-22 status: specified -> implemented

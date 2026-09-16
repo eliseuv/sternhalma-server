@@ -8,6 +8,12 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-16: Implemented R-22 -- sternhalma-agent has a training step
+  (training.py's Trainer): samples a replay-buffer batch, computes the
+  AlphaZero loss (soft-label policy cross-entropy + value MSE), takes an
+  optimizer step, and syncs a target network from the evaluation network
+  every target_sync_interval steps. Dedicated sync-schedule test coverage
+  deferred to R-26 (its own selected item this session).
 - 2026-09-16: Implemented R-25 -- dedicated test suite for R-21's replay
   buffer (tests/test_replay_buffer.py): exact push/sample round-tripping
   with no field mix-up between examples, capacity eviction, batch-size and
