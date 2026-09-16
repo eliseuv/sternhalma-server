@@ -238,6 +238,11 @@ impl Client {
                 self.send_remote_message(RemoteOutMessage::Turn { movements })
                     .await?;
             }
+            // A request this client sent was rejected
+            ServerMessage::InvalidRequest { reason } => {
+                self.send_remote_message(RemoteOutMessage::InvalidRequest { reason })
+                    .await?;
+            }
         }
 
         Ok(())

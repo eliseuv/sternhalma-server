@@ -24,6 +24,15 @@ pub enum ServerMessage {
         /// Contains all valid moves the player can make from the current board state.
         movements: Vec<MovementIndices>,
     },
+    /// A request from this client was rejected
+    ///
+    /// Sent when the client's `ClientRequest` couldn't be honored -- e.g. a
+    /// move made out of turn, or an invalid movement index -- so the client
+    /// can recover instead of silently missing its turn.
+    InvalidRequest {
+        /// Human-readable reason for the rejection
+        reason: String,
+    },
 }
 
 /// Message from the Server Thread to ALL Local Client Threads

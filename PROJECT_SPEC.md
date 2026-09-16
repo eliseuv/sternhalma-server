@@ -149,7 +149,7 @@ Found during audit: sternhalma-game has zero #[test] functions of its own; corre
 "Very robust" per DIRECTIONS.md: interpreted as property/fuzz-style tests (already reflected in this item's acceptance) covering edge cases — board boundaries, repeated chain-jumps, near-finished-game states — not just example-based unit tests.
 
 ### R-8 — Report invalid client requests back to the offending client
-- status: specified
+- status: implemented
 - covers: [G-4]
 - acceptance: An out-of-turn move or an invalid movement_index results in an explicit rejection message sent back to that client (not just a server-side log line), so misbehaving or desynced clients can recover.
 
@@ -268,3 +268,4 @@ _Append-only. Newest at the bottom._
 - 2026-09-15 — added M-3: Improvement: real-world self-play benchmarking
 - 2026-09-15 — R-7 status: specified -> implemented
 - 2026-09-15 — R-9 status: specified -> implemented
+- 2026-09-15 — R-8 status: specified -> implemented

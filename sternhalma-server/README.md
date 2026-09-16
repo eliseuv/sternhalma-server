@@ -98,6 +98,7 @@ All messages are strictly typed and use the `snake_case` convention.
 
 - `{ "type": "welcome", "session_id": "UUID_STRING" }`: Successful connection/reconnection.
 - `{ "type": "reject", "reason": "STRING" }`: Connection/reconnection failed.
+- `{ "type": "invalid_request", "reason": "STRING" }`: A `choice` was rejected -- out of turn, or an out-of-range `movement_index` -- so a misbehaving or desynced client can recover instead of silently missing its turn.
 - `{ "type": "disconnect" }`: Server is shutting down the session.
 - `{ "type": "turn", "movements": [ [ [q1, r1], [q2, r2] ], ... ] }`: It is your turn. Contains a list of valid moves (start and end hex coordinates).
 - `{ "type": "movement", "player": "Player1" | "Player2", "movement": [[q1, r1], [q2, r2]], "scores": [s1, s2] }`: Broadcast of a valid move made by a player.
@@ -125,6 +126,9 @@ cargo test
 - **Reconnection Tests** (`tests/reconnection.rs`):
   - Tests the robustness of the session management.
   - Verifies that a player can disconnect and reconnect with their session ID to resume the game without losing state.
+- **Invalid Request Tests** (`tests/invalid_requests.rs`):
+  - Verifies an out-of-turn move gets an `invalid_request` response instead of being silently dropped.
+  - Verifies an out-of-range `movement_index` gets the same.
 
 ### Usage
 

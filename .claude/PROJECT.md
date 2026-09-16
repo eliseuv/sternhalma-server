@@ -8,6 +8,11 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-15: Implemented R-8 — sternhalma-server now sends an
+  `invalid_request` message back to the offending client on an out-of-turn
+  move or an out-of-range movement index, instead of only logging
+  server-side and silently dropping the request. Added
+  tests/invalid_requests.rs covering both cases end-to-end.
 - 2026-09-15: Implemented R-9 — added criterion benchmarks for
   sternhalma-game's move generation and move application. No throughput
   target set (measured only ~2.1us/move-generation, ~30ns/move-application

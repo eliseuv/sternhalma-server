@@ -52,6 +52,12 @@ pub enum RemoteOutMessage {
         /// Each movement is represented by a pair of indices
         movements: Vec<MovementIndices>,
     },
+    /// Inform remote client that a request it sent was rejected
+    ///
+    /// Sent for a move made out of turn or an invalid movement index, so a
+    /// misbehaving or desynced client can recover instead of silently
+    /// missing its turn.
+    InvalidRequest { reason: String },
     /// Inform remote client about a player's movement
     ///
     /// Sent to update the client's view of the game board.

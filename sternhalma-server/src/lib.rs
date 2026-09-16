@@ -298,7 +298,11 @@ impl Server {
                                     // Check if player is the current player
                                     if player != current_player {
                                         log::error!("Player {player} attempted to move out of turn");
-                                        // TODO: Inform player of the out of turn movement
+                                        self.notify_invalid_request(
+                                            player,
+                                            format!("It is not your turn (waiting on {current_player})"),
+                                        )
+                                        .await;
                                         continue;
                                     }
 
@@ -307,7 +311,14 @@ impl Server {
                                         Some(m) => m,
                                         None => {
                                              log::warn!("Player {player} sent invalid movement index: {movement_index}");
-                                             // TODO: Inform player
+                                             self.notify_invalid_request(
+                                                 player,
+                                                 format!(
+                                                     "Invalid movement index {movement_index}, expected 0..{}",
+                                                     movements.len()
+                                                 ),
+                                             )
+                                             .await;
                                              continue;
                                         }
                                     };
@@ -331,6 +342,21 @@ impl Server {
                 }
 
             }
+        }
+    }
+
+    /// Tell a client that a request it sent was rejected
+    ///
+    /// Best-effort: a failed or missing send is logged, not propagated, so a
+    /// client that can't be reached for the notification doesn't take down
+    /// the game for the other player too.
+    async fn notify_invalid_request(&mut self, player: Player, reason: String) {
+        let Some(tx) = self.clients_tx.get_mut(&player) else {
+            log::warn!("Cannot notify player {player} of invalid request: not connected");
+            return;
+        };
+        if let Err(err) = tx.send(ServerMessage::InvalidRequest { reason }).await {
+            log::warn!("Failed to notify player {player} of invalid request: {err}");
         }
     }
 
