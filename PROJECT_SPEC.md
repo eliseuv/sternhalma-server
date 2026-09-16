@@ -170,7 +170,7 @@ From DIRECTIONS.md: "make this crate very robust and performant." No target inve
 Measured (release build, this machine): game_iter_available_moves ~2.1us/call, board_apply_movement_unchecked ~30ns/call. No target enforced -- see R-9's acceptance.
 
 ### R-10 — Implement checkpoint-gating evaluation harness for self-play training
-- status: specified
+- status: implemented
 - covers: [G-6]
 - refs: [R-23]
 - acceptance: After each training iteration, the new checkpoint plays a fixed number of evaluation games against the previous best checkpoint; if it wins >=55%, it replaces the best network used for subsequent self-play generation.
@@ -178,6 +178,8 @@ Measured (release build, this machine): game_iter_available_moves ~2.1us/call, b
 Implements G-6. Depends on R-5 existing first.
 
 Complexity: medium. Reuses most of R-20's self-play-via-MCTS machinery (play games, track outcomes) against two fixed checkpoints instead of one live network; the new part is just the win-rate gate and swapping 'best'. Depends on R-23 (needs checkpointing to exist).
+
+The harness exists (evaluation.py) but M-3 stays planned, not done: M-3's covers includes G-6 itself (the goal of an actual checkpoint beating a prior one >=55% of the time), which needs a real training run to be true, not just the mechanism to check for it. No training has happened yet.
 
 ### R-11 — Package sternhalma-python as an installable Python module and wire it as a uv dependency of sternhalma-agent
 - status: implemented
@@ -540,3 +542,5 @@ _Append-only. Newest at the bottom._
 - 2026-09-16 — R-23 status: specified -> implemented
 - 2026-09-16 — M-2 status: planned -> done
 - 2026-09-16 — R-24 status: specified -> implemented
+- 2026-09-16 — R-10 status: specified -> implemented
+- 2026-09-16 — R-10 status: implemented -> implemented

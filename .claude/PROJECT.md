@@ -8,6 +8,13 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-16: Implemented R-10 -- sternhalma-agent has a checkpoint-gating
+  harness (evaluation.py): plays evaluation games between a candidate and
+  the current best checkpoint, alternating who moves first, and decides
+  whether the candidate should replace it (>=55% of decisive games by
+  default). M-3 stays planned, not done: its covers includes G-6 itself
+  (an actual checkpoint beating a prior one this way), which needs a real
+  training run to be true, not just the mechanism existing.
 - 2026-09-16: Implemented R-24 -- Trainer.train_step now logs its loss and
   the policy/value components at each call, so training progress is
   observable without instrumenting code.
