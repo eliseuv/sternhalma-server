@@ -48,6 +48,22 @@ uv run main.py --host 127.0.0.1 --port 8080
 - `--host`: The hostname or IP address of the game server (default: `127.0.0.1`).
 - `--port`: The port number the server is listening on (default: `8080`).
 
+### Training
+
+Training runs entirely offline via self-play (no server needed):
+
+```bash
+uv run main.py --train --iterations 100 --checkpoint-dir checkpoints --device cuda
+```
+
+Each iteration plays `GAMES_PER_ITERATION` self-play games via MCTS, buffers their examples, runs `TRAIN_STEPS_PER_ITERATION` training steps once the buffer holds enough for a batch, and saves a checkpoint every `CHECKPOINT_INTERVAL` iterations. These (and `NUM_SIMULATIONS`, `BATCH_SIZE`, `TARGET_SYNC_INTERVAL`, `BUFFER_CAPACITY`) are module-level constants in `main.py`, not yet exposed as their own CLI flags.
+
+**Arguments:**
+
+- `--iterations`: Number of self-play/train iterations to run (default: `100`).
+- `--checkpoint-dir`: Directory to save model checkpoints to (default: `checkpoints`).
+- `--device`: Device to run the network on (default: `cuda`).
+
 ## Project Structure
 
 - `sternhalma.py`: `Player` and `Scores` types shared by the protocol layer. Board state and move logic used to be reimplemented here too; that's now `sternhalma_rs` (the `sternhalma-game` Rust engine's Python bindings) instead.
@@ -73,6 +89,7 @@ uv run main.py --host 127.0.0.1 --port 8080
 - **Heuristic**: `heuristic.py`'s `potential` (a symmetric, current-mover-relative distance-to-goal score) biases MCTS priors toward stronger-looking moves via `mcts.search`'s `heuristic_weight`, on by default.
 - **Self-Play**: `self_play.py`'s `play_self_play_game` plays a full game via MCTS against itself and returns a training `Example` per turn, outcome backfilled from the winner once the game ends. A game that hits its turn cap without finishing contributes nothing -- verified manually that untrained/weak play can take far more than 150-500 turns to finish naturally, so the current `DEFAULT_MAX_TURNS=300` is a placeholder, not calibrated.
 - **Replay Buffer**: `replay_buffer.py`'s `ReplayBuffer` stores `Example(state, policy, outcome)` records (the same type `self_play.py` produces) with a bounded capacity (oldest evicted first) and samples training batches without replacement.
-- **Training**: `training.py`'s `Trainer` samples a replay-buffer batch, computes the AlphaZero loss (soft-label policy cross-entropy + value MSE) against its evaluation network, takes an optimizer step, and syncs a target network from it every `target_sync_interval` steps -- not yet wired into a loop that actually runs self-play, buffers, and trains repeatedly (that's `main.py --train`'s job).
-- **Testing**: `tests/test_integration.py` covers the client-server handshake and game flow; `tests/test_alphazero.py` covers `from_state`'s channel canonicalization; `tests/test_action_space.py` covers the action encoding round-trip and masking; `tests/test_mcts.py` covers game-state cloning and that search/search_with_policy return legal, correctly-shaped results; `tests/test_heuristic.py` covers the potential function and its MCTS bias; `tests/test_self_play.py` covers outcome backfilling and the turn-cap early exit; `tests/test_replay_buffer.py` covers exact push/sample round-tripping, capacity eviction, batch-size and without-replacement sampling, and the over-request error; `tests/test_training.py` covers that a training step returns a finite loss and actually updates the network.
+- **Training**: `training.py`'s `Trainer` samples a replay-buffer batch, computes the AlphaZero loss (soft-label policy cross-entropy + value MSE) against its evaluation network, takes an optimizer step, and syncs a target network from it every `target_sync_interval` steps.
+- **Training Loop**: `main.py --train` (see `train()`) runs the full loop -- self-play games each iteration, buffered, trained on once there's enough for a batch, checkpointed on a schedule. No longer a no-op. This closes M-2 (Learning): the AlphaZero-compatible training architecture exists end-to-end, though untrained and with several constants (game count, simulation count, batch size, etc.) still hardcoded rather than tuned or exposed as flags.
+- **Testing**: `tests/test_integration.py` covers the client-server handshake and game flow; `tests/test_alphazero.py` covers `from_state`'s channel canonicalization; `tests/test_action_space.py` covers the action encoding round-trip and masking; `tests/test_mcts.py` covers game-state cloning and that search/search_with_policy return legal, correctly-shaped results; `tests/test_heuristic.py` covers the potential function and its MCTS bias; `tests/test_self_play.py` covers outcome backfilling and the turn-cap early exit; `tests/test_replay_buffer.py` covers exact push/sample round-tripping, capacity eviction, batch-size and without-replacement sampling, and the over-request error; `tests/test_training.py` covers that a training step returns a finite loss and actually updates the network; `tests/test_main.py` is a wiring smoke test confirming the full loop runs and checkpoints.
 - **Dependency Management**: Project dependencies managed via `uv` and `pyproject.toml`, including `sternhalma-rs` as a local path dependency built via `maturin`.

@@ -8,6 +8,14 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-16: Implemented R-23 -- main.py --train now runs the full
+  self-play/train loop (each iteration: self-play games, buffer them, train
+  once the buffer holds enough for a batch, checkpoint on a schedule) via a
+  new train() function, instead of being a no-op. Training mode branches
+  before ever connecting to a server -- self-play needs none. This closes
+  M-2 (Learning): all of R-18/R-19/R-20/R-21/R-22/R-23 done, the
+  AlphaZero-compatible training architecture exists end-to-end (untrained,
+  several constants still hardcoded rather than tuned).
 - 2026-09-16: Implemented R-22 -- sternhalma-agent has a training step
   (training.py's Trainer): samples a replay-buffer batch, computes the
   AlphaZero loss (soft-label policy cross-entropy + value MSE), takes an

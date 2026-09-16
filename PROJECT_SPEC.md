@@ -308,7 +308,7 @@ Complexity: medium-large. The most involved piece of the chain still ahead: batc
 Dedicated target-network sync test coverage deferred to R-26 (its own selected item this session, same acceptance) rather than duplicated here -- spot-verified manually that the target network diverges from the evaluation network after a step below the sync interval and matches it again immediately after a step that crosses the interval.
 
 ### R-23 — Wire main.py --train to run the full self-play/train loop
-- status: specified
+- status: implemented
 - covers: [G-3]
 - acceptance: Running main.py --train repeatedly generates self-play games, stores them in the replay buffer, and runs training steps on a configured schedule, saving model checkpoints periodically -- no longer a no-op.
 - refs: [R-18, R-19, R-20, R-21, R-22]
@@ -424,7 +424,7 @@ From DIRECTIONS.md's Preparation section. Groups: remove the agent's duplicate P
 Updated after R-6 was decomposed into R-11 (packaging, done) and R-12 (the migration itself, outstanding) -- M-1 isn't done until R-12 lands too.
 
 ### M-2 — Learning: implement the AlphaZero-compatible training architecture
-- status: planned
+- status: done
 - covers: [R-18, R-19, R-20, R-21, R-22, R-23]
 
 From DIRECTIONS.md's Learning section. R-5 is the whole of this milestone: MCTS-guided self-play wiring SternhalmaZero into actual move selection and training, which R-1/R-2/R-3 then refine.
@@ -537,3 +537,5 @@ _Append-only. Newest at the bottom._
 - 2026-09-16 — R-20 status: specified -> implemented
 - 2026-09-16 — R-25 status: specified -> implemented
 - 2026-09-16 — R-22 status: specified -> implemented
+- 2026-09-16 — R-23 status: specified -> implemented
+- 2026-09-16 — M-2 status: planned -> done
