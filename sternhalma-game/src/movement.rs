@@ -296,3 +296,167 @@ impl Board<Player> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A single row (all `i == 8`) is valid for `j` in `4..=12`, so it's a
+    /// convenient straight line for testing movement without needing to
+    /// reason about the board's full hexagonal geometry.
+    const ROW: usize = 8;
+
+    fn row_idx(j: usize) -> HexIdx {
+        [ROW, j]
+    }
+
+    #[test]
+    fn single_step_available_onto_an_empty_neighbor() {
+        let mut board = Board::<Player>::empty();
+        board.set_piece(row_idx(4), Player::Player1).unwrap();
+
+        let moves: Vec<_> = board.available_movements_from(row_idx(4)).collect();
+        assert!(moves.iter().any(|m| matches!(
+            m,
+            Movement::Move { from, to } if *from == row_idx(4) && *to == row_idx(5)
+        )));
+    }
+
+    #[test]
+    fn move_onto_an_occupied_destination_is_rejected() {
+        let mut board = Board::<Player>::empty();
+        board.set_piece(row_idx(4), Player::Player1).unwrap();
+        board.set_piece(row_idx(5), Player::Player2).unwrap();
+
+        let movement = Movement::Move {
+            from: row_idx(4),
+            to: row_idx(5),
+        };
+        assert!(matches!(
+            board.validate_movement(&movement),
+            Err(MovementError::Occupied(idx)) if idx == row_idx(5)
+        ));
+    }
+
+    #[test]
+    fn move_from_an_empty_position_is_rejected() {
+        let board = Board::<Player>::empty();
+        let movement = Movement::Move {
+            from: row_idx(4),
+            to: row_idx(5),
+        };
+        assert!(matches!(
+            board.validate_movement(&movement),
+            Err(MovementError::EmptyInit)
+        ));
+    }
+
+    #[test]
+    fn move_from_outside_the_board_is_rejected() {
+        let board = Board::<Player>::empty();
+        let movement = Movement::Move {
+            from: [0, 0],
+            to: row_idx(5),
+        };
+        assert!(matches!(
+            board.validate_movement(&movement),
+            Err(MovementError::InvalidIndex(idx)) if idx == [0, 0]
+        ));
+    }
+
+    #[test]
+    fn single_hop_over_one_adjacent_piece() {
+        let mut board = Board::<Player>::empty();
+        board.set_piece(row_idx(4), Player::Player1).unwrap();
+        board.set_piece(row_idx(5), Player::Player2).unwrap();
+        // row_idx(6) left empty: the landing spot.
+
+        let hops: Vec<_> = board.available_hops_from(row_idx(4)).collect();
+        assert_eq!(hops, vec![row_idx(6)]);
+
+        let movement = Movement::Hops {
+            path: vec![row_idx(4), row_idx(6)],
+        };
+        board.apply_movement(&movement).unwrap();
+
+        assert_eq!(board.get(&row_idx(4)).unwrap(), &None);
+        assert_eq!(board.get(&row_idx(6)).unwrap(), &Some(Player::Player1));
+        // The hopped-over piece is untouched.
+        assert_eq!(board.get(&row_idx(5)).unwrap(), &Some(Player::Player2));
+    }
+
+    #[test]
+    fn hop_is_unavailable_when_the_landing_spot_is_occupied() {
+        let mut board = Board::<Player>::empty();
+        board.set_piece(row_idx(4), Player::Player1).unwrap();
+        board.set_piece(row_idx(5), Player::Player2).unwrap();
+        board.set_piece(row_idx(6), Player::Player2).unwrap();
+
+        let hops: Vec<_> = board.available_hops_from(row_idx(4)).collect();
+        assert!(!hops.contains(&row_idx(6)));
+    }
+
+    #[test]
+    fn chain_hop_over_multiple_pieces() {
+        let mut board = Board::<Player>::empty();
+        board.set_piece(row_idx(4), Player::Player1).unwrap();
+        board.set_piece(row_idx(5), Player::Player2).unwrap();
+        // row_idx(6) empty: first landing spot.
+        board.set_piece(row_idx(7), Player::Player2).unwrap();
+        // row_idx(8) empty: second landing spot.
+
+        let full_chain = Movement::Hops {
+            path: vec![row_idx(4), row_idx(6), row_idx(8)],
+        };
+        assert!(board.validate_movement(&full_chain).is_ok());
+
+        board.apply_movement(&full_chain).unwrap();
+        assert_eq!(board.get(&row_idx(4)).unwrap(), &None);
+        assert_eq!(board.get(&row_idx(6)).unwrap(), &None);
+        assert_eq!(board.get(&row_idx(8)).unwrap(), &Some(Player::Player1));
+    }
+
+    #[test]
+    fn empty_hops_path_is_rejected() {
+        let board = Board::<Player>::empty();
+        assert!(matches!(
+            board.validate_movement(&Movement::Hops { path: vec![] }),
+            Err(MovementError::ShortHopping(0))
+        ));
+    }
+
+    /// `validate_movement` only checks `ShortHopping` against `path.len()`,
+    /// but `path.get(1..)` on a length-1 path returns `Some(&[])` (an empty
+    /// slice), not `None` — so a single-element hop path currently validates
+    /// as a no-op "hop to the same cell" instead of being rejected as too
+    /// short. Documented here as discovered while adding this coverage
+    /// (R-7), not fixed: out of scope for a test-coverage item.
+    #[test]
+    fn single_element_hops_path_is_a_validation_gap_not_a_rejection() {
+        let mut board = Board::<Player>::empty();
+        board.set_piece(row_idx(4), Player::Player1).unwrap();
+
+        let movement = Movement::Hops {
+            path: vec![row_idx(4)],
+        };
+        let result = board.validate_movement(&movement);
+        assert!(
+            result.is_ok(),
+            "expected the current (buggy) pass-through behavior, got {result:?}"
+        );
+    }
+
+    #[test]
+    fn movement_indices_from_move_and_hops() {
+        let mv = Movement::Move {
+            from: row_idx(4),
+            to: row_idx(5),
+        };
+        assert_eq!(MovementIndices::from(&mv), [row_idx(4), row_idx(5)]);
+
+        let hops = Movement::Hops {
+            path: vec![row_idx(4), row_idx(6), row_idx(8)],
+        };
+        assert_eq!(MovementIndices::from(&hops), [row_idx(4), row_idx(8)]);
+    }
+}

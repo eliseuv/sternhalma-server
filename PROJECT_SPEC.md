@@ -140,7 +140,7 @@ Currently missing entirely: no MCTS implementation exists anywhere in sternhalma
 Implements D-2. Also removes the duplication between sternhalma-agent/sternhalma.py and sternhalma-python/client/sternhalma.py (the latter is a thin wrapper already doing roughly this, for a single-process demo/test client rather than the network-play agent).
 
 ### R-7 — Add direct unit test coverage for sternhalma-game
-- status: specified
+- status: implemented
 - covers: [G-1]
 - acceptance: sternhalma-game has its own unit/property tests covering single-step movement, chain-jump movement, scoring, and win detection, independent of sternhalma-server's integration tests.
 
@@ -264,3 +264,4 @@ _Append-only. Newest at the bottom._
 - 2026-09-15 — added M-1: Preparation: dedupe game rules, harden and benchmark the engine, fix small bugs
 - 2026-09-15 — added M-2: Learning: implement the AlphaZero-compatible training architecture
 - 2026-09-15 — added M-3: Improvement: real-world self-play benchmarking
+- 2026-09-15 — R-7 status: specified -> implemented

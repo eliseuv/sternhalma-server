@@ -6,7 +6,7 @@ The game logic is implemented in the `sternhalma-game` crate, and the Python bin
 
 ## Project Structure
 
-- `sternhalma-game`: The game logic.
+- `sternhalma-game`: The game logic (board, movement, scoring, win detection), with unit test coverage independent of `sternhalma-server`'s integration tests.
 - `sternhalma-python`: Python bindings for the game logic (`sternhalma-python/client` holds a safe wrapper and test client for those bindings).
 - `sternhalma-agent`: The AlphaZero agent.
 - `sternhalma-server`: The server that handles the game state and communication.

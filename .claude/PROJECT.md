@@ -8,6 +8,13 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-15: Implemented R-7 — sternhalma-game now has 23 unit tests of its
+  own (board bounds/placement, single-step and chain-jump movement,
+  validation errors, scoring, win detection), independent of
+  sternhalma-server's integration tests. Found and documented, but did not
+  fix (out of scope for a test-coverage item), a real validation gap: a
+  length-1 `Hops` path currently validates as a no-op instead of being
+  rejected as too short.
 - 2026-09-15: Guided review pass — user wrote a roadmap into `DIRECTIONS.md`
   (Preparation/Learning/Improvement). Confirmed it matched what the prior
   unguided pass had already found (R-5/R-6/R-7/R-8, D-2) and folded in two

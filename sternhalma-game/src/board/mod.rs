@@ -372,3 +372,100 @@ impl Board<Player> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn empty_board_has_exactly_121_valid_positions() {
+        let board = Board::<Player>::empty();
+        let valid_count = lut::VALID_POSITIONS
+            .iter()
+            .filter(|&&idx| matches!(board[idx], Some(None)))
+            .count();
+        assert_eq!(valid_count, 121);
+    }
+
+    #[test]
+    fn positions_outside_the_star_are_invalid() {
+        let board = Board::<Player>::empty();
+        for idx in [[0, 0], [8, 0], [16, 16], [0, 16]] {
+            assert!(
+                board.get(&idx).is_err(),
+                "{idx:?} should be outside the board"
+            );
+        }
+    }
+
+    #[test]
+    fn valid_positions_are_addressable() {
+        let board = Board::<Player>::empty();
+        for idx in lut::VALID_POSITIONS {
+            assert!(board.get(&idx).is_ok(), "{idx:?} should be on the board");
+        }
+    }
+
+    #[test]
+    fn new_board_places_both_players_starting_pieces() {
+        let board = Board::<Player>::new();
+        for idx in lut::PLAYER1_STARTING_POSITIONS {
+            assert_eq!(board.get(&idx).unwrap(), &Some(Player::Player1));
+        }
+        for idx in lut::PLAYER2_STARTING_POSITIONS {
+            assert_eq!(board.get(&idx).unwrap(), &Some(Player::Player2));
+        }
+    }
+
+    #[test]
+    fn set_piece_on_occupied_position_errors() {
+        let mut board = Board::<Player>::new();
+        let idx = lut::PLAYER1_STARTING_POSITIONS[0];
+        assert!(matches!(
+            board.set_piece(idx, Player::Player1),
+            Err(PiecePlacementError::Occupied(i)) if i == idx
+        ));
+    }
+
+    #[test]
+    fn set_piece_outside_the_board_errors() {
+        let mut board = Board::<Player>::empty();
+        let idx = [0, 0];
+        assert!(matches!(
+            board.set_piece(idx, Player::Player1),
+            Err(PiecePlacementError::InvalidIndex(i)) if i == idx
+        ));
+    }
+
+    #[test]
+    fn score_counts_only_occupied_goal_positions() {
+        let mut board = Board::<Player>::empty();
+        let goal = goal_indices(&Player::Player1);
+        board.place_pieces(&goal[..5], Player::Player1).unwrap();
+        assert_eq!(board.score(&Player::Player1), 5);
+        assert_eq!(board.score(&Player::Player2), 0);
+    }
+
+    #[test]
+    fn check_winner_is_none_until_every_goal_position_is_occupied() {
+        let mut board = Board::<Player>::empty();
+        let goal = goal_indices(&Player::Player1);
+        board
+            .place_pieces(&goal[..goal.len() - 1], Player::Player1)
+            .unwrap();
+        assert_eq!(board.check_winner(), None);
+
+        board
+            .place_pieces(&goal[goal.len() - 1..], Player::Player1)
+            .unwrap();
+        assert_eq!(board.check_winner(), Some(Player::Player1));
+    }
+
+    #[test]
+    fn check_winner_is_none_on_a_fresh_game_board() {
+        // Starting positions are each player's own corner, not their goal
+        // (the opposite corner), so a fresh board never starts pre-won.
+        let board = Board::<Player>::new();
+        assert_eq!(board.check_winner(), None);
+    }
+}

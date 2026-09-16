@@ -273,3 +273,97 @@ impl Game {
         self.status
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use board::goal_indices;
+
+    #[test]
+    fn new_game_starts_player1_at_turn_zero() {
+        let game = Game::new();
+        assert!(matches!(
+            game.status(),
+            GameStatus::Playing {
+                player: Player::Player1,
+                turns: 0,
+                scores: [0, 0],
+            }
+        ));
+    }
+
+    #[test]
+    fn apply_movement_switches_player_and_advances_turns() {
+        let mut game = Game::new();
+        let movement = game.iter_available_moves().next().unwrap();
+
+        let status = game.apply_movement(&movement).unwrap();
+        assert!(matches!(
+            status,
+            GameStatus::Playing {
+                player: Player::Player2,
+                turns: 1,
+                ..
+            }
+        ));
+        assert_eq!(game.history().len(), 1);
+    }
+
+    #[test]
+    fn apply_movement_out_of_turn_is_rejected() {
+        let mut game = Game::new();
+        // Player 2's [4, 8] has an empty neighbor at [4, 7] even from the
+        // starting position, so this is a legal move for Player 2 -- just
+        // not on Player 1's turn.
+        let out_of_turn = Movement::Move {
+            from: [4, 8],
+            to: [4, 7],
+        };
+        assert!(matches!(
+            game.apply_movement(&out_of_turn),
+            Err(GameError::OutOfTurn)
+        ));
+    }
+
+    #[test]
+    fn apply_movement_after_game_finished_is_rejected() {
+        // Player 1's goal is Player 2's starting triangle. Fill all but one
+        // goal cell, and stage the last piece one step away from it.
+        let goal = goal_indices(&Player::Player1);
+        let mut board = Board::empty();
+        board
+            .place_pieces(&goal[..goal.len() - 1], Player::Player1)
+            .unwrap();
+        board.set_piece([4, 7], Player::Player1).unwrap();
+
+        let mut game = Game {
+            board,
+            status: GameStatus::Playing {
+                player: Player::Player1,
+                turns: 0,
+                scores: [14, 0],
+            },
+            history: Vec::new(),
+        };
+
+        let winning_move = Movement::Move {
+            from: [4, 7],
+            to: goal[goal.len() - 1],
+        };
+        let status = game.apply_movement(&winning_move).unwrap();
+        assert!(matches!(
+            status,
+            GameStatus::Finished {
+                winner: Player::Player1,
+                total_turns: 1,
+                scores: [15, 0],
+            }
+        ));
+
+        // Any further movement is rejected outright, regardless of content.
+        assert!(matches!(
+            game.apply_movement(&winning_move),
+            Err(GameError::GameFinished)
+        ));
+    }
+}
