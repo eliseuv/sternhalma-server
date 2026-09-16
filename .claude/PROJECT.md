@@ -8,6 +8,15 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-16: Implemented R-20 -- sternhalma-agent has self-play game
+  generation (self_play.py): plays a full game via MCTS against itself,
+  recording a training example per turn, outcome backfilled from the
+  winner once the game ends. Extended mcts.py with search_with_policy()
+  to expose the MCTS visit-count policy target this needs. Real finding
+  while verifying: a full self-play game under weak/untrained play did not
+  reach a natural finish within 150-500 turns in manual runs, so
+  DEFAULT_MAX_TURNS=300 is an untuned placeholder -- concretely motivates
+  R-27..R-29 (a smaller board cuts turns-to-completion substantially).
 - 2026-09-16: Implemented R-21 -- sternhalma-agent has a replay buffer
   (replay_buffer.py) storing Example(state, policy, outcome) self-play
   records with bounded, oldest-evicted capacity and without-replacement

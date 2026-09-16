@@ -274,7 +274,7 @@ Second slice of R-5.
 Terminal-value convention: sternhalma-game only ever finishes a game via the mover completing their own goal (no opponent-blocks-you loss condition), so at any terminal node reached during simulation, whoever's turn would be next always just lost -- terminal value is simply -1, always. clone_game() works around sternhalma_rs.Game having no clone/undo by replaying history() onto a fresh instance; cheap per R-9's ~30ns/move benchmark.
 
 ### R-20 — Implement self-play game generation
-- status: specified
+- status: implemented
 - covers: [G-3]
 - acceptance: A self-play routine plays a complete game of SternhalmaZero (via MCTS) against itself, recording each turn's (board tensor, MCTS visit-count policy target, eventual game outcome) as a training example.
 - refs: [R-19]
@@ -282,6 +282,10 @@ Terminal-value convention: sternhalma-game only ever finishes a game via the mov
 Third slice of R-5.
 
 Complexity: medium. Unblocked now -- R-18/R-19/R-1 are all done. Orchestration over existing pieces (mcts.search, from_state, action_space), not a new algorithm: alternate search() calls, record (state, policy target, outcome) per turn, backfill the outcome once the game ends.
+
+Extended mcts.py with search_with_policy() (shares its simulation loop with search() via a new _run_search() helper) to expose the MCTS visit-count policy target R-20's acceptance needs, which search() alone didn't provide.
+
+Real finding while verifying: a full self-play game under weak/near-random play (untrained network, low num_simulations) did not reach a natural finish within 150-500 turns in manual runs -- Sternhalma games apparently take far more turns to complete than that without strong play. DEFAULT_MAX_TURNS=300 is an untuned placeholder, not calibrated; this concretely motivates R-27..R-29 (a smaller board cuts turns-to-completion substantially). Automated test coverage is therefore: _backfill_outcomes tested in isolation (fast, deterministic), and the max_turns cutoff path (fast) -- a full random game reaching a genuine win wasn't practical to include in the committed test suite.
 
 ### R-21 — Implement a replay buffer for self-play training data
 - status: implemented
@@ -532,3 +536,4 @@ _Append-only. Newest at the bottom._
 - 2026-09-16 — R-10 status: specified -> specified
 - 2026-09-16 — R-17 status: specified -> implemented
 - 2026-09-16 — R-21 status: specified -> implemented
+- 2026-09-16 — R-20 status: specified -> implemented
