@@ -6,8 +6,8 @@ import numpy as np
 import sternhalma_rs
 from numpy.typing import NDArray
 
-from client.client import Client
-from client.protocol import (
+from sternhalma_agent.client.client import Client
+from sternhalma_agent.client.protocol import (
     ClientMessageChoice,
     GameResult,
     ServerMessage,

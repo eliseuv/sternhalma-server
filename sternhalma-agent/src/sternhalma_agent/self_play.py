@@ -11,9 +11,9 @@ import sternhalma_rs
 import torch as T
 from numpy.typing import NDArray
 
-from alphazero import SternhalmaZero, from_state
-from mcts import DEFAULT_HEURISTIC_WEIGHT, search_with_policy
-from replay_buffer import Example
+from sternhalma_agent.alphazero import SternhalmaZero, from_state
+from sternhalma_agent.mcts import DEFAULT_HEURISTIC_WEIGHT, search_with_policy
+from sternhalma_agent.replay_buffer import Example
 
 # Safety cap: sternhalma_rs.Game has no max-turns concept of its own (that's
 # the server's job) -- self-play needs its own bound so a pathological game

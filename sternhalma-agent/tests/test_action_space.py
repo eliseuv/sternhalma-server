@@ -1,7 +1,7 @@
 import numpy as np
 import sternhalma_rs
 
-from action_space import (
+from sternhalma_agent.action_space import (
     NUM_ACTIONS,
     NUM_CELLS,
     decode_action,

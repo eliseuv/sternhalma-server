@@ -3,14 +3,14 @@ import asyncio
 import struct
 import cbor2
 import logging
-from client.client import Client
-from client.protocol import (
+from sternhalma_agent.client.client import Client
+from sternhalma_agent.client.protocol import (
     ClientMessageChoice,
     ServerMessageTurn,
     ServerMessageGameFinished,
     GameResultFinished,
 )
-from sternhalma import Player
+from sternhalma_agent.sternhalma import Player
 
 # Disable logging for tests to keep output clean, or set to DEBUG for debugging
 logging.basicConfig(level=logging.CRITICAL)

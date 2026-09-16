@@ -1,9 +1,9 @@
 import numpy as np
 import sternhalma_rs
 
-from action_space import NUM_ACTIONS, decode_action
-from alphazero import SternhalmaZero
-from mcts import clone_game, search, search_with_policy
+from sternhalma_agent.action_space import NUM_ACTIONS, decode_action
+from sternhalma_agent.alphazero import SternhalmaZero
+from sternhalma_agent.mcts import clone_game, search, search_with_policy
 
 
 def test_clone_game_reproduces_history_without_sharing_state():

@@ -14,14 +14,14 @@ import sternhalma_rs
 import torch as T
 from numpy.typing import NDArray
 
-from action_space import (
+from sternhalma_agent.action_space import (
     NUM_ACTIONS,
     decode_action,
     legal_action_indices,
     mask_and_renormalize,
 )
-from alphazero import SternhalmaZero, from_state
-from heuristic import potential, potential_after_move
+from sternhalma_agent.alphazero import SternhalmaZero, from_state
+from sternhalma_agent.heuristic import potential, potential_after_move
 
 C_PUCT = 1.5
 

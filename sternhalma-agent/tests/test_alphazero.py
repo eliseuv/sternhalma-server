@@ -1,7 +1,7 @@
 import numpy as np
 import sternhalma_rs
 
-from alphazero import from_state
+from sternhalma_agent.alphazero import from_state
 
 
 def test_from_state_matches_raw_board_on_player_ones_turn():

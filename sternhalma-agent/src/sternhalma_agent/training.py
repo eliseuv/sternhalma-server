@@ -9,8 +9,8 @@ import numpy as np
 import torch as T
 import torch.nn.functional as F
 
-from alphazero import SternhalmaZero
-from replay_buffer import ReplayBuffer
+from sternhalma_agent.alphazero import SternhalmaZero
+from sternhalma_agent.replay_buffer import ReplayBuffer
 
 
 class Trainer:

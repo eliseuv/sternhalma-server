@@ -1,8 +1,10 @@
 import numpy as np
 import sternhalma_rs
 
-from heuristic import potential, potential_after_move
-from mcts import _bias_priors_with_potential  # pyright: ignore[reportPrivateUsage]
+from sternhalma_agent.heuristic import potential, potential_after_move
+from sternhalma_agent.mcts import (  # pyright: ignore[reportPrivateUsage]
+    _bias_priors_with_potential,
+)
 
 
 def test_potential_flips_goal_region_with_the_current_mover():

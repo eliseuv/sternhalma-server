@@ -1,8 +1,8 @@
 import pytest
 import torch as T
 
-from action_space import NUM_ACTIONS
-from replay_buffer import Example, ReplayBuffer
+from sternhalma_agent.action_space import NUM_ACTIONS
+from sternhalma_agent.replay_buffer import Example, ReplayBuffer
 
 
 def _example(i: int) -> Example:

@@ -1,7 +1,7 @@
-import evaluation
-from action_space import NUM_ACTIONS
-from alphazero import SternhalmaZero
-from evaluation import (  # pyright: ignore[reportPrivateUsage]
+from sternhalma_agent import evaluation
+from sternhalma_agent.action_space import NUM_ACTIONS
+from sternhalma_agent.alphazero import SternhalmaZero
+from sternhalma_agent.evaluation import (  # pyright: ignore[reportPrivateUsage]
     _should_replace_best,
     evaluate_checkpoint,
     play_evaluation_game,

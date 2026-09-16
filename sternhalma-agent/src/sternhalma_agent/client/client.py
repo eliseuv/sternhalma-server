@@ -6,7 +6,7 @@ import logging
 from typing import Any, final
 
 
-from utils import printer
+from sternhalma_agent.utils import printer
 
 
 from .protocol import (

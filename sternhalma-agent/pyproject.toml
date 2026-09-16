@@ -1,3 +1,7 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "sternhalma-agent"
 version = "0.1.0"
@@ -13,6 +17,9 @@ dev = [
 
 [tool.uv.sources]
 sternhalma-rs = { path = "../sternhalma-python", editable = true }
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sternhalma_agent"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

@@ -4,9 +4,9 @@ decide whether the new one should replace the current best (G-6).
 
 import sternhalma_rs
 
-from alphazero import SternhalmaZero
-from mcts import DEFAULT_HEURISTIC_WEIGHT, search
-from self_play import DEFAULT_MAX_TURNS
+from sternhalma_agent.alphazero import SternhalmaZero
+from sternhalma_agent.mcts import DEFAULT_HEURISTIC_WEIGHT, search
+from sternhalma_agent.self_play import DEFAULT_MAX_TURNS
 
 DEFAULT_WIN_RATE_THRESHOLD = 0.55
 

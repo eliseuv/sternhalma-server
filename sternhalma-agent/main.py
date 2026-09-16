@@ -5,15 +5,19 @@ from pathlib import Path
 
 import torch as T
 
-from action_space import NUM_ACTIONS
-from agent import Agent, AgentBrownian
-from alphazero import SternhalmaZero
-from client.client import Client
-from client.protocol import GameResult, GameResultFinished, GameResultMaxTurns
-from replay_buffer import ReplayBuffer
-from self_play import play_self_play_game
-from training import Trainer
-from utils import printer
+from sternhalma_agent.action_space import NUM_ACTIONS
+from sternhalma_agent.agent import Agent, AgentBrownian
+from sternhalma_agent.alphazero import SternhalmaZero
+from sternhalma_agent.client.client import Client
+from sternhalma_agent.client.protocol import (
+    GameResult,
+    GameResultFinished,
+    GameResultMaxTurns,
+)
+from sternhalma_agent.replay_buffer import ReplayBuffer
+from sternhalma_agent.self_play import play_self_play_game
+from sternhalma_agent.training import Trainer
+from sternhalma_agent.utils import printer
 
 # Training loop defaults -- not yet exposed as CLI flags, tune here.
 GAMES_PER_ITERATION = 5

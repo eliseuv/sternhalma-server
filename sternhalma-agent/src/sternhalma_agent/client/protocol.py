@@ -5,7 +5,7 @@ from typing import Any, final, override
 import numpy as np
 from numpy.typing import NDArray
 
-from sternhalma import Player, Scores
+from sternhalma_agent.sternhalma import Player, Scores
 
 
 # Game result

@@ -66,18 +66,21 @@ Each iteration plays `GAMES_PER_ITERATION` self-play games via MCTS, buffers the
 
 ## Project Structure
 
-- `sternhalma.py`: `Player` and `Scores` types shared by the protocol layer. Board state and move logic used to be reimplemented here too; that's now `sternhalma_rs` (the `sternhalma-game` Rust engine's Python bindings) instead.
-- `action_space.py`: Translates between the server's variable-length legal-move list and `SternhalmaZero`'s fixed 121x121 (source, target) policy action space.
-- `mcts.py`: Monte Carlo Tree Search over `SternhalmaZero`'s policy/value outputs.
-- `heuristic.py`: A distance-to-goal potential function biasing MCTS priors, most useful before the network is trained.
-- `replay_buffer.py`: Bounded, oldest-evicted store of self-play training examples, with random-sampling.
-- `self_play.py`: Plays a complete game via MCTS against itself, recording a training example per turn.
-- `training.py`: The training step -- policy + value loss against replay buffer samples, with a periodically-synced target network.
-- `evaluation.py`: Checkpoint-gating -- plays evaluation games between two checkpoints and decides whether the new one should replace the current best.
-- `alphazero.py`: Neural network architecture and tensor conversions.
-- `client.py`: Async TCP client for connecting to the game server.
-- `protocol.py`: Protocol message definitions (Server/Client messages).
-- `agent.py`: Abstract agent definition and basic implementations (Random, Constant).
+`main.py` is the CLI entrypoint script; everything it uses is an installed package
+under `src/sternhalma_agent/`.
+
+- `src/sternhalma_agent/sternhalma.py`: `Player` and `Scores` types shared by the protocol layer. Board state and move logic used to be reimplemented here too; that's now `sternhalma_rs` (the `sternhalma-game` Rust engine's Python bindings) instead.
+- `src/sternhalma_agent/action_space.py`: Translates between the server's variable-length legal-move list and `SternhalmaZero`'s fixed 121x121 (source, target) policy action space.
+- `src/sternhalma_agent/mcts.py`: Monte Carlo Tree Search over `SternhalmaZero`'s policy/value outputs.
+- `src/sternhalma_agent/heuristic.py`: A distance-to-goal potential function biasing MCTS priors, most useful before the network is trained.
+- `src/sternhalma_agent/replay_buffer.py`: Bounded, oldest-evicted store of self-play training examples, with random-sampling.
+- `src/sternhalma_agent/self_play.py`: Plays a complete game via MCTS against itself, recording a training example per turn.
+- `src/sternhalma_agent/training.py`: The training step -- policy + value loss against replay buffer samples, with a periodically-synced target network.
+- `src/sternhalma_agent/evaluation.py`: Checkpoint-gating -- plays evaluation games between two checkpoints and decides whether the new one should replace the current best.
+- `src/sternhalma_agent/alphazero.py`: Neural network architecture and tensor conversions.
+- `src/sternhalma_agent/client/client.py`: Async TCP client for connecting to the game server.
+- `src/sternhalma_agent/client/protocol.py`: Protocol message definitions (Server/Client messages).
+- `src/sternhalma_agent/agent.py`: Abstract agent definition and basic implementations (Random, Constant).
 
 ## Current Progress
 

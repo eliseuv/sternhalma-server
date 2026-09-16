@@ -2,10 +2,10 @@ import logging
 
 import torch as T
 
-from action_space import NUM_ACTIONS
-from alphazero import SternhalmaZero
-from replay_buffer import Example, ReplayBuffer
-from training import Trainer
+from sternhalma_agent.action_space import NUM_ACTIONS
+from sternhalma_agent.alphazero import SternhalmaZero
+from sternhalma_agent.replay_buffer import Example, ReplayBuffer
+from sternhalma_agent.training import Trainer
 
 
 def _buffer_with_examples(n: int) -> ReplayBuffer:

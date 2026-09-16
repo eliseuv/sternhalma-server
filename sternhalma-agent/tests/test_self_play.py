@@ -1,8 +1,11 @@
 import torch as T
 
-from action_space import NUM_ACTIONS
-from alphazero import SternhalmaZero
-from self_play import _backfill_outcomes, play_self_play_game  # pyright: ignore[reportPrivateUsage]
+from sternhalma_agent.action_space import NUM_ACTIONS
+from sternhalma_agent.alphazero import SternhalmaZero
+from sternhalma_agent.self_play import (  # pyright: ignore[reportPrivateUsage]
+    _backfill_outcomes,
+    play_self_play_game,
+)
 
 
 def test_backfill_outcomes_alternates_sign_from_the_last_turn():
