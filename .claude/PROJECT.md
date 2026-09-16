@@ -8,6 +8,11 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-15: Implemented R-15 — sternhalma-game's validate_movement now
+  rejects a length-1 Hops path as ShortHopping(1), instead of letting it
+  through as a no-op "hop to the same cell" (path.get(1..) returned
+  Some(&[]) rather than None for a length-1 slice). Flipped the R-7 test
+  that pinned the old behavior to assert the rejection instead.
 - 2026-09-15: Implemented R-14 — sternhalma-agent's pytest now collects and
   passes tests/test_integration.py (added `pythonpath = ["."]` under
   `[tool.pytest.ini_options]`). Found, but did not fix (unrelated,

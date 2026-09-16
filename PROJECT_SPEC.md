@@ -214,7 +214,7 @@ to sternhalma-agent/pyproject.toml (pytest's built-in pythonpath option, no new 
 Verified: uv run pytest collects and passes (1 passed), ruff check clean. basedpyright still reports 5 pre-existing errors + 145 warnings in tests/test_integration.py (uninitialized test-fixture attributes, unrelated to pythonpath) -- not fixed, out of scope for this item.
 
 ### R-15 — Reject length-1 Hops paths in sternhalma-game's validate_movement
-- status: specified
+- status: implemented
 - covers: [G-1]
 - acceptance: validate_movement returns Err(MovementError::ShortHopping(1)) for a Movement::Hops{path} of length 1, matching the existing length-0 case, instead of validating it as a no-op 'hop to the same cell'.
 
@@ -329,3 +329,4 @@ _Append-only. Newest at the bottom._
 - 2026-09-15 — added R-15: Reject length-1 Hops paths in sternhalma-game's validate_movement
 - 2026-09-15 — R-13 status: specified -> implemented
 - 2026-09-15 — R-14 status: specified -> implemented
+- 2026-09-15 — R-15 status: specified -> implemented

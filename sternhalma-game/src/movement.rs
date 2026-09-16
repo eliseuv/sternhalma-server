@@ -187,6 +187,14 @@ impl<T> Board<T> {
             }
 
             Movement::Hops { path } => {
+                // A hop needs at least a start and one landing spot; a
+                // length-1 path would otherwise slip past the checks below
+                // as a no-op "hop to the same cell" (path.get(1..) returns
+                // Some(&[]) rather than None for a length-1 slice).
+                if path.len() < 2 {
+                    return Err(MovementError::ShortHopping(path.len()));
+                }
+
                 // Check starting position
                 let start = path
                     .first()
@@ -425,25 +433,18 @@ mod tests {
         ));
     }
 
-    /// `validate_movement` only checks `ShortHopping` against `path.len()`,
-    /// but `path.get(1..)` on a length-1 path returns `Some(&[])` (an empty
-    /// slice), not `None` — so a single-element hop path currently validates
-    /// as a no-op "hop to the same cell" instead of being rejected as too
-    /// short. Documented here as discovered while adding this coverage
-    /// (R-7), not fixed: out of scope for a test-coverage item.
     #[test]
-    fn single_element_hops_path_is_a_validation_gap_not_a_rejection() {
+    fn single_element_hops_path_is_rejected() {
         let mut board = Board::<Player>::empty();
         board.set_piece(row_idx(4), Player::Player1).unwrap();
 
         let movement = Movement::Hops {
             path: vec![row_idx(4)],
         };
-        let result = board.validate_movement(&movement);
-        assert!(
-            result.is_ok(),
-            "expected the current (buggy) pass-through behavior, got {result:?}"
-        );
+        assert!(matches!(
+            board.validate_movement(&movement),
+            Err(MovementError::ShortHopping(1))
+        ));
     }
 
     #[test]
