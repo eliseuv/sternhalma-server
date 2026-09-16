@@ -59,3 +59,30 @@ def test_train_step_logs_the_loss_and_its_components(caplog):
     assert f"loss={loss:.4f}" in record.message
     assert "policy=" in record.message
     assert "value=" in record.message
+
+
+def _networks_match(trainer: Trainer) -> bool:
+    eval_state = trainer.network.state_dict()
+    target_state = trainer.target_network.state_dict()
+    return all(T.equal(eval_state[k], target_state[k]) for k in eval_state)
+
+
+def test_target_network_syncs_on_the_configured_schedule():
+    network = SternhalmaZero(board_size=17, num_actions=NUM_ACTIONS, num_res_blocks=1)
+    trainer = Trainer(network, target_sync_interval=3, device="cpu")
+    buffer = _buffer_with_examples(8)
+
+    # A fresh Trainer's target network is a deepcopy -- matches immediately.
+    assert _networks_match(trainer)
+
+    trainer.train_step(buffer, batch_size=4)  # step 1
+    assert not _networks_match(trainer), "should have diverged before the sync interval"
+
+    trainer.train_step(buffer, batch_size=4)  # step 2
+    assert not _networks_match(trainer)
+
+    trainer.train_step(buffer, batch_size=4)  # step 3 -- crosses the interval
+    assert _networks_match(trainer), "should match immediately after the scheduled sync"
+
+    trainer.train_step(buffer, batch_size=4)  # step 4
+    assert not _networks_match(trainer), "should diverge again after the sync"

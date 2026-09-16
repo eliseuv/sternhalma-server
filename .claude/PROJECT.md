@@ -8,6 +8,10 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-16: Implemented R-26 -- dedicated test for R-22's target-network
+  sync schedule: confirms the target network matches the evaluation
+  network immediately after init and after every scheduled sync, and
+  diverges from it on every step in between.
 - 2026-09-16: Implemented R-10 -- sternhalma-agent has a checkpoint-gating
   harness (evaluation.py): plays evaluation games between a candidate and
   the current best checkpoint, alternating who moves first, and decides

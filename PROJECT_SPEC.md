@@ -342,7 +342,7 @@ Second of R-2's three still-open checks.
 Complexity: small. A focused unit test once R-21 exists, same shape as this session's other test-writing items (R-7, R-15, etc.).
 
 ### R-26 — Test target-network sync schedule
-- status: specified
+- status: implemented
 - covers: [G-3]
 - supersedes: [R-2]
 - refs: [R-22]
@@ -544,3 +544,4 @@ _Append-only. Newest at the bottom._
 - 2026-09-16 — R-24 status: specified -> implemented
 - 2026-09-16 — R-10 status: specified -> implemented
 - 2026-09-16 — R-10 status: implemented -> implemented
+- 2026-09-16 — R-26 status: specified -> implemented
