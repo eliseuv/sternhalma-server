@@ -21,9 +21,9 @@ updated: 2026-09-15
      - **Now blocked on:** ...
      - **Next action:** ... -->
 
-- **Last session:** Migrated this repo from a legacy .claude/PROJECT.md to PROJECT_SPEC.md/DIRECTIONS.md; audited the codebase (unguided pass, DIRECTIONS.md was empty) and found the AlphaZero training loop doesn't exist yet, the agent duplicates game rules in Python instead of using the Rust bindings, and sternhalma-game has no unit tests of its own.
-- **Now blocked on:** Nothing formally (no open Q- items) — R-6 (the self-play/MCTS loop) is the practical prerequisite for R-1/R-2/R-3.
-- **Next action:** Implement R-6 (MCTS-guided self-play training loop), then R-7 (migrate the agent onto sternhalma_rs bindings) before touching R-1/R-2/R-3's refinements.
+- **Last session:** Folded your DIRECTIONS.md roadmap (Preparation/Learning/Improvement) into the spec: confirmed R-6/R-7/R-8/R-5 already matched your intent, added R-9 (engine throughput benchmark, no invented target), G-6 + R-10 (checkpoint-gating as the more rigorous self-play benchmark beyond the random-baseline win rate), and M-1/M-2/M-3 capturing the three phases.
+- **Now blocked on:** Nothing (no open Q- items).
+- **Next action:** Start M-1 (Preparation): R-6 (migrate agent onto sternhalma_rs bindings), R-7 (engine tests), R-9 (engine benchmark), R-8 (report invalid client requests) — in whatever order suits, they're independent of each other but all precede M-2's R-5.
 
 ## 2. Problem
 
@@ -52,6 +52,12 @@ _What is broken today, for whom, and what it costs them. No solutions here._
 ### G-5 — sternhalma-web provides a real-time playable web client
 - status: accepted
 - metric: A user can complete a full game end-to-end against a running sternhalma-server over WebSocket, with moves, turn order and scores staying in sync (manual playtest; no automated test suite yet).
+
+### G-6 — AlphaZero agent passes checkpoint-gating evaluation against its own prior best
+- status: accepted
+- metric: A new checkpoint must beat the previous best checkpoint in >=55% of evaluation games to replace it as the new best network (the standard AlphaZero self-improvement gate).
+
+Follow-on to G-3's cheaper early signal (win rate vs. a random baseline). Represents "more robust real-world benchmarking with self-play" from DIRECTIONS.md. Only measurable once R-5 (self-play training loop) exists.
 
 ## 4. Non-Goals
 
@@ -140,12 +146,30 @@ Implements D-2. Also removes the duplication between sternhalma-agent/sternhalma
 
 Found during audit: sternhalma-game has zero #[test] functions of its own; correctness is currently only exercised indirectly via sternhalma-server's tests/gameplay.rs. movement.rs also contains several unsafe blocks (apply_movement_unchecked, unwrap_unchecked) whose invariants are presently unverified by any test at this layer.
 
+"Very robust" per DIRECTIONS.md: interpreted as property/fuzz-style tests (already reflected in this item's acceptance) covering edge cases — board boundaries, repeated chain-jumps, near-finished-game states — not just example-based unit tests.
+
 ### R-8 — Report invalid client requests back to the offending client
 - status: specified
 - covers: [G-4]
 - acceptance: An out-of-turn move or an invalid movement_index results in an explicit rejection message sent back to that client (not just a server-side log line), so misbehaving or desynced clients can recover.
 
 Three TODOs in sternhalma-server/src/lib.rs (lines ~117, ~301, ~310) mark this as known-missing: out-of-turn moves and invalid movement indices are currently logged and silently dropped rather than reported to the client. Low severity — a misbehaving client only misses its own turn — but explicitly called out in the code as intended follow-up.
+
+### R-9 — Benchmark sternhalma-game's core operations for self-play throughput
+- status: specified
+- covers: [G-1, G-3]
+- refs: [R-5, R-7]
+- acceptance: Move generation and move application are benchmarked (e.g. via criterion); a concrete throughput target is set once R-5's self-play loop exists and reveals the actual required moves/sec, since self-play calls this in a tight loop millions of times per training iteration.
+
+From DIRECTIONS.md: "make this crate very robust and performant." No target invented yet — deliberately deferred until there's a real self-play loop to calibrate against, per the same judgment already applied to R-3's board size.
+
+### R-10 — Implement checkpoint-gating evaluation harness for self-play training
+- status: specified
+- covers: [G-6]
+- refs: [R-5]
+- acceptance: After each training iteration, the new checkpoint plays a fixed number of evaluation games against the previous best checkpoint; if it wins >=55%, it replaces the best network used for subsequent self-play generation.
+
+Implements G-6. Depends on R-5 existing first.
 
 ## 8. Interfaces
 
@@ -186,6 +210,24 @@ User's explicit direction: "There should be a core high performance rust impleme
 
 <!-- items: M -->
 
+### M-1 — Preparation: dedupe game rules, harden and benchmark the engine, fix small bugs
+- status: planned
+- covers: [R-6, R-7, R-8, R-9]
+
+From DIRECTIONS.md's Preparation section. Groups: remove the agent's duplicate Python rules (R-6, implementing D-2), add robust/property test coverage and a throughput benchmark to sternhalma-game (R-7, R-9), and fix the server's silent-drop of invalid client requests (R-8).
+
+### M-2 — Learning: implement the AlphaZero-compatible training architecture
+- status: planned
+- covers: [R-5]
+
+From DIRECTIONS.md's Learning section. R-5 is the whole of this milestone: MCTS-guided self-play wiring SternhalmaZero into actual move selection and training, which R-1/R-2/R-3 then refine.
+
+### M-3 — Improvement: real-world self-play benchmarking
+- status: planned
+- covers: [G-6, R-10]
+
+From DIRECTIONS.md's Improvement section. Checkpoint-gating evaluation (G-6, R-10) as the more rigorous benchmark beyond G-3's random-baseline win rate.
+
 ## 14. Changelog
 
 _Append-only. Newest at the bottom._
@@ -215,3 +257,10 @@ _Append-only. Newest at the bottom._
 - 2026-09-15 — R-1 refs: [R-6] -> [R-5]
 - 2026-09-15 — R-2 refs: [R-6] -> [R-5]
 - 2026-09-15 — R-3 refs: [R-6] -> [R-5]
+- 2026-09-15 — R-7 status: specified -> specified
+- 2026-09-15 — added R-9: Benchmark sternhalma-game's core operations for self-play throughput
+- 2026-09-15 — added G-6: AlphaZero agent passes checkpoint-gating evaluation against its own prior best
+- 2026-09-15 — added R-10: Implement checkpoint-gating evaluation harness for self-play training
+- 2026-09-15 — added M-1: Preparation: dedupe game rules, harden and benchmark the engine, fix small bugs
+- 2026-09-15 — added M-2: Learning: implement the AlphaZero-compatible training architecture
+- 2026-09-15 — added M-3: Improvement: real-world self-play benchmarking

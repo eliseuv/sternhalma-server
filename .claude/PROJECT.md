@@ -8,6 +8,14 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-15: Guided review pass — user wrote a roadmap into `DIRECTIONS.md`
+  (Preparation/Learning/Improvement). Confirmed it matched what the prior
+  unguided pass had already found (R-5/R-6/R-7/R-8, D-2) and folded in two
+  extensions it named beyond that: a throughput benchmark for
+  `sternhalma-game` with no invented target (R-9, deferred until R-5 exists
+  to calibrate against), and checkpoint-gating as a more rigorous self-play
+  benchmark than the random-baseline win rate (G-6, R-10). Recorded the three
+  named phases as M-1/M-2/M-3.
 - 2026-09-15: Migrated tracking from the legacy `.claude/PROJECT.md` shape
   (About/Notes/Log) to `PROJECT_SPEC.md` + `DIRECTIONS.md`. The About
   paragraph's content now lives in the root `README.md` and `PROJECT_SPEC.md`'s
