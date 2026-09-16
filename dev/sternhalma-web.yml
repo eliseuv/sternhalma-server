@@ -1,0 +1,14 @@
+# ./.tmuxinator.yml
+
+name: sternhalma-web
+root: .
+
+# Runs on project start, always
+on_project_start:  nix develop ./sternhalma-server --command cargo build --manifest-path ./sternhalma-server/Cargo.toml --bin sternhalma-server
+
+windows:
+  - game:
+      layout: even-horizontal
+      panes:
+        - echo "Starting Server..." && cd sternhalma-server && export RUST_LOG=debug && cargo run --bin sternhalma-server -- --ws 127.0.0.1:8081
+        - echo "Starting Web Client..." && cd sternhalma-web && npm run dev

@@ -1,0 +1,15 @@
+# ./.tmuxinator.yml
+
+name: sternhalma-agent
+root: .
+
+# Runs on project start, always
+on_project_start:  nix develop ./sternhalma-server --command cargo build --manifest-path ./sternhalma-server/Cargo.toml --bin sternhalma-server --release
+
+windows:
+  - game:
+      layout: even-horizontal
+      panes:
+        - echo "Starting Server..." && cd ./sternhalma-server && export RUST_LOG=debug && cargo run --bin sternhalma-server --release -- --tcp 127.0.0.1:8080
+        - echo "Starting Agent 1..." && sleep 3 && cd ./sternhalma-agent && nix develop . --command python main.py --host 127.0.0.1 --port 8080
+        - echo "Starting Agent 2..." && sleep 3 && cd ./sternhalma-agent && nix develop . --command python main.py --host 127.0.0.1 --port 8080
