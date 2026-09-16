@@ -8,6 +8,11 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-16: Implemented R-17 -- confirmed R-16's Lobby.reconnect() already
+  routes a reconnecting session to the correct game among several
+  concurrent ones (no new implementation needed, per the finding it was
+  flagged with last session). Added tests/lobby.rs's
+  reconnection_resolves_to_the_correct_game_among_several to verify it.
 - 2026-09-16: Review pass (unguided, agenda from the command argument
   "reorganize the next steps by complexity"). Decomposed R-3 (smaller board
   variant) into R-27/R-28/R-29 after finding it was another large task

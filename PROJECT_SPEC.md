@@ -243,7 +243,7 @@ First slice of R-4, split off because it needs a subsystem that doesn't exist ye
 Also routes reconnection across concurrent games (tries each tracked game's session map in turn) -- this may satisfy R-17 as a side effect of the design, not verified with a dedicated test yet. Known limitation, not fixed here: finished games are never pruned from the Lobby's tracked list, so their (now-dead) channels linger and get uselessly probed on every join()/reconnect() scan -- harmless at this server's scale, a real leak over a long-lived process.
 
 ### R-17 — Route session reconnection across concurrent games
-- status: specified
+- status: implemented
 - covers: [G-4]
 - supersedes: [R-4]
 - refs: [R-16]
@@ -252,6 +252,8 @@ Also routes reconnection across concurrent games (tries each tracked game's sess
 Second slice of R-4. Depends on R-16's Lobby existing first -- today each Server's own sessions: HashMap<Uuid, Player> only makes sense when there's exactly one game.
 
 Complexity: small. Independent of the M-2 chain (different subsystem, sternhalma-server). R-16's Lobby.reconnect() already tries every tracked game in turn, so this may just need a verification test with 2+ concurrent games, not new implementation -- confirm rather than assume.
+
+Confirmed: R-16's Lobby.reconnect() already routes correctly -- no new implementation needed, just this verification test. Verified via reconnection_resolves_to_the_correct_game_among_several: 2 concurrent games, disconnect+reconnect a player from the second game, confirm the reconnected client's move reaches only its true game partner and never the distractor game.
 
 ### R-18 — Define a fixed action encoding for the policy head and translate to/from the server's move list
 - status: implemented
@@ -526,3 +528,4 @@ _Append-only. Newest at the bottom._
 - 2026-09-16 — R-25 status: specified -> specified
 - 2026-09-16 — R-26 status: specified -> specified
 - 2026-09-16 — R-10 status: specified -> specified
+- 2026-09-16 — R-17 status: specified -> implemented

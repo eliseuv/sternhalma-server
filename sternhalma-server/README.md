@@ -129,6 +129,9 @@ cargo test
 - **Invalid Request Tests** (`tests/invalid_requests.rs`):
   - Verifies an out-of-turn move gets an `invalid_request` response instead of being silently dropped.
   - Verifies an out-of-range `movement_index` gets the same.
+- **Lobby Tests** (`tests/lobby.rs`):
+  - Verifies two concurrent games don't leak moves or broadcasts into each other.
+  - Verifies a reconnecting session resolves to the game it actually belongs to, not just any tracked game.
 
 ### Usage
 
