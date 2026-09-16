@@ -8,6 +8,14 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-16: Implemented R-1 -- sternhalma-agent has a potential function
+  (heuristic.py) biasing MCTS priors toward pieces closer to goal, wired
+  into mcts.py via a heuristic_weight parameter (on by default). Caught and
+  fixed a real bug via my own first test: the heuristic must be symmetric
+  (current-mover-relative), not fixed to a single identity, since
+  sternhalma_rs.Game.board()'s channel 0 tracks whoever's turn it currently
+  is -- a fixed-identity version silently scored the wrong side after every
+  odd number of moves.
 - 2026-09-16: Implemented R-19 -- sternhalma-agent has a working MCTS
   (mcts.py): UCB selection using SternhalmaZero's policy priors, network-
   based leaf evaluation and expansion, backup with perspective-flipping.

@@ -12,11 +12,18 @@ from dataclasses import dataclass, field
 import numpy as np
 import sternhalma_rs
 import torch as T
+from numpy.typing import NDArray
 
 from action_space import decode_action, legal_action_indices, mask_and_renormalize
 from alphazero import SternhalmaZero, from_state
+from heuristic import potential, potential_after_move
 
 C_PUCT = 1.5
+
+# How strongly the potential function (heuristic.py) biases priors relative
+# to the network's own policy. 0 disables it entirely. Most useful early,
+# before the network is trained and its own priors are close to random.
+DEFAULT_HEURISTIC_WEIGHT = 0.3
 
 
 def clone_game(game: sternhalma_rs.Game) -> sternhalma_rs.Game:
@@ -60,8 +67,37 @@ def _select_child(node: Node) -> tuple[int, Node]:
     return max(node.children.items(), key=lambda item: _ucb_score(node, item[1]))
 
 
+def _bias_priors_with_potential(
+    probs: NDArray[np.float32],
+    movements: NDArray[np.int_],
+    game: sternhalma_rs.Game,
+    weight: float,
+) -> NDArray[np.float32]:
+    """Reweights `probs` (over `movements`, same order) toward moves that
+    increase heuristic.potential more, via a log-linear (product-of-experts)
+    blend: log(prior) + weight * potential_gain, renormalized.
+    """
+    base = potential(game)
+    gains = np.array(
+        [
+            potential_after_move(game, (int(m[0][0]), int(m[0][1])), (int(m[1][0]), int(m[1][1])))
+            - base
+            for m in movements
+        ],
+        dtype=np.float32,
+    )
+    logits = np.log(probs + 1e-8) + weight * gains
+    logits -= logits.max()  # numerical stability before exponentiating
+    weighted = np.exp(logits)
+    return (weighted / weighted.sum()).astype(np.float32)
+
+
 def _evaluate_and_expand(
-    node: Node, game: sternhalma_rs.Game, network: SternhalmaZero, device: str
+    node: Node,
+    game: sternhalma_rs.Game,
+    network: SternhalmaZero,
+    device: str,
+    heuristic_weight: float = 0.0,
 ) -> float:
     """Runs the network on `game`, expands `node`'s children, returns the leaf value."""
     movements = np.array(game.available_moves())
@@ -69,6 +105,8 @@ def _evaluate_and_expand(
         policy_logits, value = network(from_state(game, device=device))
     policy = T.softmax(policy_logits.squeeze(0), dim=0).cpu().numpy()
     probs = mask_and_renormalize(policy, movements)
+    if heuristic_weight:
+        probs = _bias_priors_with_potential(probs, movements, game, heuristic_weight)
     indices = legal_action_indices(movements)
     for action, prob in zip(indices.tolist(), probs.tolist()):
         node.children[action] = Node(prior=prob)
@@ -80,13 +118,17 @@ def search(
     network: SternhalmaZero,
     num_simulations: int,
     device: str = "cuda",
+    heuristic_weight: float = DEFAULT_HEURISTIC_WEIGHT,
 ) -> tuple[tuple[int, int], tuple[int, int]]:
     """Runs MCTS from `game`'s current position and returns the chosen move.
 
     `game` itself is not mutated -- simulations run on independent clones.
+    `heuristic_weight` biases priors toward heuristic.potential (see
+    _bias_priors_with_potential); 0 disables it, using the network's own
+    policy alone.
     """
     root = Node(prior=1.0)
-    _evaluate_and_expand(root, game, network, device)
+    _evaluate_and_expand(root, game, network, device, heuristic_weight)
 
     for _ in range(num_simulations):
         node = root
@@ -107,7 +149,9 @@ def search(
             # perspective of whoever's turn it is at a node, so that's -1.
             value = -1.0
         else:
-            value = _evaluate_and_expand(node, sim_game, network, device)
+            value = _evaluate_and_expand(
+                node, sim_game, network, device, heuristic_weight
+            )
 
         for path_node in reversed(path):
             path_node.visit_count += 1

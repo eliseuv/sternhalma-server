@@ -82,7 +82,7 @@ stops two async participants from silently using one word for two things._
 <!-- items: R -->
 
 ### R-1 — Guide agent search with a potential/heuristic function
-- status: specified
+- status: implemented
 - acceptance: A potential/heuristic function exists and measurably influences agent move selection (e.g. biases MCTS priors or rollout evaluation toward stronger moves), per the todo's own phrasing.
 - covers: [G-3]
 - refs: [R-19]
@@ -90,6 +90,8 @@ stops two async participants from silently using one word for two things._
 From sternhalma-agent/todo.md's General section: "Implement some kind of potential function to guide the agent to the best moves." No concrete target specified yet.
 
 Depends on R-5 (the self-play training loop doesn't exist yet; this item refines it once it does).
+
+Corrected a real bug found by my own first test: potential() must be symmetric (current-mover-relative, same convention as SternhalmaZero's own value head and MCTS's backup), not fixed to a single identity like from_state()'s canonical 'me' -- a fixed-identity version silently measured the wrong side's pieces after every odd number of moves, since sternhalma_rs.Game.board()'s channel 0 tracks whoever's turn it currently is. Goal region for the current mover is picked via move-count parity (the game always starts with Player 1 to move and alternates deterministically).
 
 ### R-2 — Add correctness checks for the agent training loop
 - status: superseded
@@ -462,3 +464,4 @@ _Append-only. Newest at the bottom._
 - 2026-09-16 — R-9 refs: [R-5, R-7] -> [R-20,R-23,R-7]
 - 2026-09-16 — R-18 status: specified -> implemented
 - 2026-09-16 — R-19 status: specified -> implemented
+- 2026-09-16 — R-1 status: specified -> implemented
