@@ -49,6 +49,19 @@ fn main() -> anyhow::Result<()> {
 }
 ```
 
+## Testing & Benchmarks
+
+Unit tests (`cargo test -p sternhalma-game`) cover board bounds and placement,
+single-step and chain-jump movement, `validate_movement`'s error cases,
+scoring, and win detection -- independent of `sternhalma-server`'s
+integration tests, which only exercise this crate indirectly.
+
+Throughput benchmarks (`cargo bench -p sternhalma-game`) measure move
+generation (`Game::iter_available_moves`) and move application
+(`Board::apply_movement_unchecked`) via `criterion`. No throughput target is
+enforced yet -- self-play training doesn't exist yet either, and that's what
+will determine what "fast enough" means.
+
 ## Modules
 
 - **`board`**: Contains the `Board` struct, grid coordinates, and board initialization logic.

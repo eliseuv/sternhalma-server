@@ -156,12 +156,14 @@ Found during audit: sternhalma-game has zero #[test] functions of its own; corre
 Three TODOs in sternhalma-server/src/lib.rs (lines ~117, ~301, ~310) mark this as known-missing: out-of-turn moves and invalid movement indices are currently logged and silently dropped rather than reported to the client. Low severity — a misbehaving client only misses its own turn — but explicitly called out in the code as intended follow-up.
 
 ### R-9 — Benchmark sternhalma-game's core operations for self-play throughput
-- status: specified
+- status: implemented
 - covers: [G-1, G-3]
 - refs: [R-5, R-7]
 - acceptance: Move generation and move application are benchmarked (e.g. via criterion); a concrete throughput target is set once R-5's self-play loop exists and reveals the actual required moves/sec, since self-play calls this in a tight loop millions of times per training iteration.
 
 From DIRECTIONS.md: "make this crate very robust and performant." No target invented yet — deliberately deferred until there's a real self-play loop to calibrate against, per the same judgment already applied to R-3's board size.
+
+Measured (release build, this machine): game_iter_available_moves ~2.1us/call, board_apply_movement_unchecked ~30ns/call. No target enforced -- see R-9's acceptance.
 
 ### R-10 — Implement checkpoint-gating evaluation harness for self-play training
 - status: specified
@@ -265,3 +267,4 @@ _Append-only. Newest at the bottom._
 - 2026-09-15 — added M-2: Learning: implement the AlphaZero-compatible training architecture
 - 2026-09-15 — added M-3: Improvement: real-world self-play benchmarking
 - 2026-09-15 — R-7 status: specified -> implemented
+- 2026-09-15 — R-9 status: specified -> implemented

@@ -8,6 +8,11 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-15: Implemented R-9 — added criterion benchmarks for
+  sternhalma-game's move generation and move application. No throughput
+  target set (measured only ~2.1us/move-generation, ~30ns/move-application
+  on this machine); per its own acceptance criteria, a real target waits for
+  R-5's self-play loop to exist and reveal the actual bottleneck.
 - 2026-09-15: Implemented R-7 — sternhalma-game now has 23 unit tests of its
   own (board bounds/placement, single-step and chain-jump movement,
   validation errors, scoring, win detection), independent of
