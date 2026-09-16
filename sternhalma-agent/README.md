@@ -52,6 +52,7 @@ uv run main.py --host 127.0.0.1 --port 8080
 
 - `sternhalma.py`: `Player` and `Scores` types shared by the protocol layer. Board state and move logic used to be reimplemented here too; that's now `sternhalma_rs` (the `sternhalma-game` Rust engine's Python bindings) instead.
 - `action_space.py`: Translates between the server's variable-length legal-move list and `SternhalmaZero`'s fixed 121x121 (source, target) policy action space.
+- `mcts.py`: Monte Carlo Tree Search over `SternhalmaZero`'s policy/value outputs.
 - `alphazero.py`: Neural network architecture and tensor conversions.
 - `client.py`: Async TCP client for connecting to the game server.
 - `protocol.py`: Protocol message definitions (Server/Client messages).
@@ -64,5 +65,6 @@ uv run main.py --host 127.0.0.1 --port 8080
 - **Neural Network**: Basic AlphaZero-style architecture (ResNet backbone, Policy Head, Value Head) implemented using PyTorch in `alphazero.py`.
 - **State Representation**: `from_state` converts a `sternhalma_rs.Game` into a canonical (1, 3, 17, 17) tensor, correcting for the bindings' turn-relative channel order so channel 0 is always "me" regardless of whose turn it locally is.
 - **Action Space**: `action_space.py` gives `SternhalmaZero`'s policy head a fixed 121x121 (source, target) action space, and translates to/from the server's per-turn legal-move list (masking illegal actions and renormalizing).
-- **Testing**: `tests/test_integration.py` covers the client-server handshake and game flow; `tests/test_alphazero.py` covers `from_state`'s channel canonicalization; `tests/test_action_space.py` covers the action encoding round-trip and masking.
+- **MCTS**: `mcts.py`'s `search` runs UCB-guided tree search using `SternhalmaZero`'s policy priors and value estimates, and returns a move -- not yet wired into `Agent.decide_movement` (no `AgentMCTS` yet).
+- **Testing**: `tests/test_integration.py` covers the client-server handshake and game flow; `tests/test_alphazero.py` covers `from_state`'s channel canonicalization; `tests/test_action_space.py` covers the action encoding round-trip and masking; `tests/test_mcts.py` covers game-state cloning and that search returns a legal move.
 - **Dependency Management**: Project dependencies managed via `uv` and `pyproject.toml`, including `sternhalma-rs` as a local path dependency built via `maturin`.

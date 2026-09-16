@@ -8,6 +8,14 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-16: Implemented R-19 -- sternhalma-agent has a working MCTS
+  (mcts.py): UCB selection using SternhalmaZero's policy priors, network-
+  based leaf evaluation and expansion, backup with perspective-flipping.
+  Since sternhalma_rs.Game has no clone/undo, simulated positions are
+  reconstructed by replaying history() onto a fresh instance (cheap, ~30ns
+  per move per R-9's benchmark). Terminal value is always -1 (whoever's
+  turn is next just lost), since this game only ends by the mover
+  completing their own goal. Not yet wired into Agent.decide_movement.
 - 2026-09-16: Implemented R-18 -- sternhalma-agent has a fixed 121x121
   (source,target) action space for SternhalmaZero's policy head
   (action_space.py), with encode/decode and legal-move masking against the

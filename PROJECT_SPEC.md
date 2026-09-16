@@ -252,12 +252,14 @@ Second slice of R-4. Depends on R-16's Lobby existing first -- today each Server
 First slice of R-5. Refines the user's chosen approach (fixed move-type grid, masked per turn) into something concrete: a (source-cell x direction x hop-distance) grid, as first proposed, can't cleanly represent chain-hop moves -- sternhalma-game's own MovementIndices already compresses a chain hop down to just [start, end] with no fixed direction/distance relationship between them, so a flat 121x121 (source,target) matrix is used instead. Strictly more general (handles chain hops uniformly) and simpler to implement than the direction/distance framing originally sketched.
 
 ### R-19 — Implement MCTS search using SternhalmaZero's policy/value outputs
-- status: specified
+- status: implemented
 - covers: [G-3]
 - acceptance: A MCTS implementation (selection via UCB using policy priors, expansion, leaf evaluation via SternhalmaZero's value head, backup) selects a move given a game state and a SternhalmaZero network; a test confirms it returns a legal move from the current available-moves list within a bounded number of simulations.
 - refs: [R-18]
 
 Second slice of R-5.
+
+Terminal-value convention: sternhalma-game only ever finishes a game via the mover completing their own goal (no opponent-blocks-you loss condition), so at any terminal node reached during simulation, whoever's turn would be next always just lost -- terminal value is simply -1, always. clone_game() works around sternhalma_rs.Game having no clone/undo by replaying history() onto a fresh instance; cheap per R-9's ~30ns/move benchmark.
 
 ### R-20 — Implement self-play game generation
 - status: specified
@@ -459,3 +461,4 @@ _Append-only. Newest at the bottom._
 - 2026-09-16 — R-3 refs: [R-5] -> [R-23]
 - 2026-09-16 — R-9 refs: [R-5, R-7] -> [R-20,R-23,R-7]
 - 2026-09-16 — R-18 status: specified -> implemented
+- 2026-09-16 — R-19 status: specified -> implemented
