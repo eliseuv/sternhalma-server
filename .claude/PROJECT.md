@@ -8,6 +8,19 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-15: Decomposed R-4 into R-16 (Lobby core, done) and R-17 (route
+  reconnection across concurrent games, deferred). Implemented R-16:
+  sternhalma-server now supports multiple concurrent games via a new Lobby
+  (src/lobby.rs) that routes each new connection to an open game or spawns
+  an independent one; the server no longer exits when the first game ends
+  (blocks on Ctrl-C instead). Replaced test_reject_excess_players (a 3rd
+  player used to be rejected) with a test confirming a 3rd/4th player start
+  a second game instead, and added tests/lobby.rs verifying two concurrent
+  games don't leak moves/broadcasts into each other. The Lobby's design also
+  routes reconnection across concurrent games as a side effect (tries each
+  tracked game in turn), which may already satisfy R-17 -- not verified with
+  a dedicated test yet. Known limitation, not fixed: finished games are
+  never pruned from the Lobby's tracked list.
 - 2026-09-15: Implemented R-15 — sternhalma-game's validate_movement now
   rejects a length-1 Hops path as ShortHopping(1), instead of letting it
   through as a no-op "hop to the same cell" (path.get(1..) returned

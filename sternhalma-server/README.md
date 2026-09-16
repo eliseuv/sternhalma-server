@@ -30,7 +30,7 @@ The server is built using **Rust** and **Tokio**, leveraging an asynchronous, ac
 
 The server is designed to be **client-agnostic**. It does not enforce any specific UI implementation; any client (CLI, TUI, GUI, AI agent) that implements the communication protocol can connect and play.
 
-Due to its asynchronous nature, the server handles I/O efficiently, sleeping when idle. While currently configured for a single game session, the architecture is designed to support **multiple concurrent game sessions** in future iterations, where a central "Lobby" actor could spawn independent Server Tasks for each match.
+Due to its asynchronous nature, the server handles I/O efficiently, sleeping when idle. A central `Lobby` (`src/lobby.rs`) supports **multiple concurrent game sessions**: it routes each new connection to whichever tracked game has a free player slot, spawning an independent `Server` task (with its own channel set and `Game` state) when none does. Reconnection is routed the same way -- the `Lobby` asks each tracked game in turn until one recognizes the session ID, so it resolves correctly regardless of how many games are running.
 
 ```mermaid
 graph TD

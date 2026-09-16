@@ -9,28 +9,22 @@
 //! sternhalma-server --tcp 0.0.0.0:1234 --ws 0.0.0.0:8080
 //! ```
 
-use std::time::Duration;
+use std::{sync::Arc, time::Duration};
 
 use anyhow::{Context, Result};
 use axum::{Router, routing::get};
 use clap::Parser;
 use futures::{SinkExt, StreamExt};
-use tokio::{
-    net::TcpListener,
-    sync::{broadcast, mpsc, oneshot},
-};
+use tokio::net::TcpListener;
 use tokio_util::codec::Framed;
 
 use sternhalma_server::{
-    MainThreadMessage, Server,
     client::{ClientSink, ClientStream},
     handshake::{AppState, handle_handshake},
-    messages::{ClientMessage, ServerBroadcast},
+    lobby::Lobby,
     protocol::ServerCodec,
     ws::ws_handler,
 };
-
-const LOCAL_CHANNEL_CAPACITY: usize = 32;
 
 /// Command line arguments
 #[derive(Debug, Parser)]
@@ -59,46 +53,13 @@ async fn main() -> Result<()> {
     log::debug!("Command line arguments: {args:?}");
     let timeout = Duration::from_secs(args.timeout);
 
-    // --- Channel Setup ---
-    // The server architecture relies on message passing between threads/tasks.
-
-    // Client threads -> Server thread
-    // Used for active game actions (move, disconnect)
-    let (client_msg_tx, client_msg_rx) = mpsc::channel::<ClientMessage>(LOCAL_CHANNEL_CAPACITY);
-
-    // Server thread -> Client threads
-    // Used for broadcasting common information (move updates, game finish)
-    let (server_broadcast_tx, _server_broadcast_rx) =
-        broadcast::channel::<ServerBroadcast>(LOCAL_CHANNEL_CAPACITY);
-
-    // Main thread -> Server thread
-    // Used for connection establishment (handshake requests)
-    let (main_tx, main_rx) = mpsc::channel::<MainThreadMessage>(LOCAL_CHANNEL_CAPACITY);
-
-    // Channel for the server thread to send shutdown signal to main thread
-    // If the server logic fails or finishes, it triggers a full application shutdown.
-    let (shutdown_tx, shutdown_rx) = oneshot::channel();
-
-    // --- Spawn Game Server ---
-    // The `Server` struct runs in its own task and manages the game logic.
-    let server = Server::new(main_rx, client_msg_rx, server_broadcast_tx.clone())
-        .with_context(|| "Failed to create server")?;
-
+    // The Lobby spawns an independent game (its own Server task and channel
+    // set) per match, so more than one game can run at once; it's consulted
+    // fresh on every handshake rather than fixed at startup like a single
+    // Server used to be.
     let max_turns = args.max_turns.unwrap_or(usize::MAX);
-
-    tokio::spawn(async move {
-        if let Err(e) = server.try_run(timeout, max_turns).await {
-            log::error!("Server encountered an error: {e:?}");
-        }
-        log::trace!("Sending shutdown signal");
-        let _ = shutdown_tx.send(());
-    });
-
-    // App State held by connection handlers
     let app_state = AppState {
-        main_tx: main_tx.clone(),
-        client_msg_tx,
-        server_broadcast_tx,
+        lobby: Arc::new(Lobby::new(timeout, max_turns)),
     };
 
     // --- Start Listener ---
@@ -159,8 +120,11 @@ async fn main() -> Result<()> {
         });
     }
 
-    // Wait for shutdown signal
-    shutdown_rx.await.ok();
+    // Run until interrupted -- each game's own lifetime is independent of
+    // the process's now that the Lobby can spawn more than one.
+    tokio::signal::ctrl_c()
+        .await
+        .with_context(|| "Failed to listen for shutdown signal")?;
     log::trace!("Shutdown signal received");
 
     Ok(())

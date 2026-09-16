@@ -27,6 +27,7 @@ use humansize::{BINARY, format_size};
 
 pub mod client;
 pub mod handshake;
+pub mod lobby;
 pub mod messages;
 pub mod protocol;
 pub mod timing;

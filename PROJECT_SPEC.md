@@ -118,7 +118,7 @@ Depends on R-5 (the self-play training loop doesn't exist yet; this item refines
 State-space context, carried over from the old vault note: full board has $N = \frac{121!}{(121-30)!15!15!} \approx 3.5 \times 10^{36}$ configurations ($\log_2 N \approx 121.4$).
 
 ### R-4 — Support multiple concurrent game sessions on sternhalma-server
-- status: specified
+- status: superseded
 - covers: [G-4]
 - acceptance: Server can host N>1 simultaneous games without cross-session interference, each with its own Game state and connected clients, via a Lobby actor spawning independent Server Tasks per match.
 
@@ -219,6 +219,25 @@ Verified: uv run pytest collects and passes (1 passed), ruff check clean. basedp
 - acceptance: validate_movement returns Err(MovementError::ShortHopping(1)) for a Movement::Hops{path} of length 1, matching the existing length-0 case, instead of validating it as a no-op 'hop to the same cell'.
 
 Found and documented, not fixed, while adding R-7's test coverage (see movement.rs's single_element_hops_path_is_a_validation_gap_not_a_rejection test and its doc comment). Root cause: path.get(1..) returns Some(&[]) rather than None when path.len() == 1, so the ShortHopping check never fires for exactly that length. Not reachable via sternhalma-server (it only ever applies moves selected by index from its own precomputed move list, never an arbitrary client-supplied path), but is a latent correctness gap in the public validate_movement/apply_movement API that sternhalma-python and any future direct caller (e.g. a self-play harness) can hit. Fixing it means updating single_element_hops_path_is_a_validation_gap_not_a_rejection's assertion (it currently pins the buggy behavior) to expect the rejection instead.
+
+### R-16 — Add a Lobby that spawns an independent Server per match
+- status: implemented
+- covers: [G-4]
+- supersedes: [R-4]
+- acceptance: A Lobby component routes new connections to an open (not-yet-full) game or spawns a new independent Server task (with its own channel set and Game state) when none is open. Two games can run simultaneously without cross-session interference -- moves and broadcasts in one never reach the other. Verified by an integration test connecting 4 clients and confirming they split into two independent 2-player games.
+
+First slice of R-4, split off because it needs a subsystem that doesn't exist yet: main.rs spawns exactly one Server for the process's whole lifetime today, and handshake.rs/AppState route every connection into that single global instance with no concept of "which game".
+
+Also routes reconnection across concurrent games (tries each tracked game's session map in turn) -- this may satisfy R-17 as a side effect of the design, not verified with a dedicated test yet. Known limitation, not fixed here: finished games are never pruned from the Lobby's tracked list, so their (now-dead) channels linger and get uselessly probed on every join()/reconnect() scan -- harmless at this server's scale, a real leak over a long-lived process.
+
+### R-17 — Route session reconnection across concurrent games
+- status: specified
+- covers: [G-4]
+- supersedes: [R-4]
+- refs: [R-16]
+- acceptance: A reconnecting client's session ID resolves to the correct game among however many are running concurrently, not just a player slot within a single game.
+
+Second slice of R-4. Depends on R-16's Lobby existing first -- today each Server's own sessions: HashMap<Uuid, Player> only makes sense when there's exactly one game.
 
 ## 8. Interfaces
 
@@ -330,3 +349,7 @@ _Append-only. Newest at the bottom._
 - 2026-09-15 — R-13 status: specified -> implemented
 - 2026-09-15 — R-14 status: specified -> implemented
 - 2026-09-15 — R-15 status: specified -> implemented
+- 2026-09-15 — R-4 status: specified -> superseded
+- 2026-09-15 — added R-16: Add a Lobby that spawns an independent Server per match
+- 2026-09-15 — added R-17: Route session reconnection across concurrent games
+- 2026-09-15 — R-16 status: specified -> implemented

@@ -55,25 +55,31 @@ async fn test_multiple_players_connection() {
     }
 }
 
+/// A third and fourth connection, arriving once the first game already has
+/// two players, start a second independent game instead of being rejected --
+/// the server supports multiple concurrent games (R-16), it no longer caps
+/// out at one.
 #[tokio::test]
-async fn test_reject_excess_players() {
+async fn test_third_and_fourth_players_start_a_second_game() {
     let server = TestServer::new().expect("Failed to start server");
 
-    // Player 1
+    // Game 1: players 1 and 2
     let mut client1 = server.client().await.expect("Failed to connect client 1");
     client1.send(RemoteInMessage::Hello).await.unwrap();
     client1.recv().await.unwrap();
 
-    // Player 2
     let mut client2 = server.client().await.expect("Failed to connect client 2");
     client2.send(RemoteInMessage::Hello).await.unwrap();
     client2.recv().await.unwrap();
 
-    // Player 3 (Excess)
+    // Game 2: players 3 and 4 -- both welcomed, not rejected
     let mut client3 = server.client().await.expect("Failed to connect client 3");
     client3.send(RemoteInMessage::Hello).await.unwrap();
-
-    // Should receive Reject
     let msg3 = client3.recv().await.expect("Failed to receive response 3");
-    assert_matches!(msg3, RemoteOutMessage::Reject { .. });
+    assert_matches!(msg3, RemoteOutMessage::Welcome { .. });
+
+    let mut client4 = server.client().await.expect("Failed to connect client 4");
+    client4.send(RemoteInMessage::Hello).await.unwrap();
+    let msg4 = client4.recv().await.expect("Failed to receive response 4");
+    assert_matches!(msg4, RemoteOutMessage::Welcome { .. });
 }
