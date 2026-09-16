@@ -244,7 +244,7 @@ Also routes reconnection across concurrent games (tries each tracked game's sess
 Second slice of R-4. Depends on R-16's Lobby existing first -- today each Server's own sessions: HashMap<Uuid, Player> only makes sense when there's exactly one game.
 
 ### R-18 — Define a fixed action encoding for the policy head and translate to/from the server's move list
-- status: specified
+- status: implemented
 - covers: [G-3]
 - supersedes: [R-5]
 - acceptance: SternhalmaZero's policy head scores a fixed 121x121 (source-cell, target-cell) action space; a function maps this to/from the server's current-turn (from,to) move list, masking illegal actions and renormalizing over the legal ones. Verified by a unit test: masking+renormalizing a known policy vector against a known move list produces a distribution summing to 1 over exactly the legal moves.
@@ -458,3 +458,4 @@ _Append-only. Newest at the bottom._
 - 2026-09-16 — M-2 covers: [R-5] -> [R-18,R-19,R-20,R-21,R-22,R-23]
 - 2026-09-16 — R-3 refs: [R-5] -> [R-23]
 - 2026-09-16 — R-9 refs: [R-5, R-7] -> [R-20,R-23,R-7]
+- 2026-09-16 — R-18 status: specified -> implemented

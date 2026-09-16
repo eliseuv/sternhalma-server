@@ -8,6 +8,12 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-16: Implemented R-18 -- sternhalma-agent has a fixed 121x121
+  (source,target) action space for SternhalmaZero's policy head
+  (action_space.py), with encode/decode and legal-move masking against the
+  server's per-turn move list. Cell ordering is derived at runtime from a
+  fresh game's board mask, never hardcoded, so it can't drift from
+  sternhalma-game's own definition of the board.
 - 2026-09-16: Review pass (unguided, agenda from the command argument
   "breakdown large tasks and goals into smaller more well defined required
   steps"). Decomposed R-5 (MCTS-guided self-play training loop) into a
