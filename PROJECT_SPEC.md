@@ -284,7 +284,7 @@ Third slice of R-5.
 Complexity: medium. Unblocked now -- R-18/R-19/R-1 are all done. Orchestration over existing pieces (mcts.search, from_state, action_space), not a new algorithm: alternate search() calls, record (state, policy target, outcome) per turn, backfill the outcome once the game ends.
 
 ### R-21 — Implement a replay buffer for self-play training data
-- status: specified
+- status: implemented
 - covers: [G-3]
 - acceptance: A replay buffer stores (state, policy, outcome) training examples from self-play games and supports random-sampling a training batch; a fixed capacity with oldest-eviction (or similar) keeps memory bounded.
 - refs: [R-20]
@@ -292,6 +292,8 @@ Complexity: medium. Unblocked now -- R-18/R-19/R-1 are all done. Orchestration o
 Fourth slice of R-5.
 
 Complexity: small. A self-contained data structure (bounded-capacity buffer, push + random-sample) -- no dependency on the rest of the chain to start; only needs real self-play data (R-20) to be exercised end-to-end.
+
+Dedicated test coverage deferred to R-25 (its own selected item this session, same acceptance) rather than duplicated here -- spot-verified manually (push beyond capacity evicts oldest, sample() is without-replacement and raises when asked for more than the buffer holds).
 
 ### R-22 — Implement the training step with target-network updates
 - status: specified
@@ -529,3 +531,4 @@ _Append-only. Newest at the bottom._
 - 2026-09-16 — R-26 status: specified -> specified
 - 2026-09-16 — R-10 status: specified -> specified
 - 2026-09-16 — R-17 status: specified -> implemented
+- 2026-09-16 — R-21 status: specified -> implemented

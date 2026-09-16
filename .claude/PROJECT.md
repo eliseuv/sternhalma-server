@@ -8,6 +8,11 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-16: Implemented R-21 -- sternhalma-agent has a replay buffer
+  (replay_buffer.py) storing Example(state, policy, outcome) self-play
+  records with bounded, oldest-evicted capacity and without-replacement
+  batch sampling. Dedicated test coverage left to R-25 (same acceptance,
+  its own selected item this session) rather than duplicated here.
 - 2026-09-16: Implemented R-17 -- confirmed R-16's Lobby.reconnect() already
   routes a reconnecting session to the correct game among several
   concurrent ones (no new implementation needed, per the finding it was

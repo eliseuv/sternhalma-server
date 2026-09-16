@@ -54,6 +54,7 @@ uv run main.py --host 127.0.0.1 --port 8080
 - `action_space.py`: Translates between the server's variable-length legal-move list and `SternhalmaZero`'s fixed 121x121 (source, target) policy action space.
 - `mcts.py`: Monte Carlo Tree Search over `SternhalmaZero`'s policy/value outputs.
 - `heuristic.py`: A distance-to-goal potential function biasing MCTS priors, most useful before the network is trained.
+- `replay_buffer.py`: Bounded, oldest-evicted store of self-play training examples, with random-sampling.
 - `alphazero.py`: Neural network architecture and tensor conversions.
 - `client.py`: Async TCP client for connecting to the game server.
 - `protocol.py`: Protocol message definitions (Server/Client messages).
@@ -68,5 +69,6 @@ uv run main.py --host 127.0.0.1 --port 8080
 - **Action Space**: `action_space.py` gives `SternhalmaZero`'s policy head a fixed 121x121 (source, target) action space, and translates to/from the server's per-turn legal-move list (masking illegal actions and renormalizing).
 - **MCTS**: `mcts.py`'s `search` runs UCB-guided tree search using `SternhalmaZero`'s policy priors and value estimates, and returns a move -- not yet wired into `Agent.decide_movement` (no `AgentMCTS` yet).
 - **Heuristic**: `heuristic.py`'s `potential` (a symmetric, current-mover-relative distance-to-goal score) biases MCTS priors toward stronger-looking moves via `mcts.search`'s `heuristic_weight`, on by default.
+- **Replay Buffer**: `replay_buffer.py`'s `ReplayBuffer` stores `Example(state, policy, outcome)` records with a bounded capacity (oldest evicted first) and samples training batches without replacement -- not yet fed by self-play (no `AgentMCTS` generating games yet).
 - **Testing**: `tests/test_integration.py` covers the client-server handshake and game flow; `tests/test_alphazero.py` covers `from_state`'s channel canonicalization; `tests/test_action_space.py` covers the action encoding round-trip and masking; `tests/test_mcts.py` covers game-state cloning and that search returns a legal move; `tests/test_heuristic.py` covers the potential function and its MCTS bias.
 - **Dependency Management**: Project dependencies managed via `uv` and `pyproject.toml`, including `sternhalma-rs` as a local path dependency built via `maturin`.
