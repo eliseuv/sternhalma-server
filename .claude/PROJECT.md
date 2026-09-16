@@ -8,6 +8,17 @@ vault_ref: chinese-checkers-ai
 ---
 
 ## Log
+- 2026-09-16: Review pass (unguided, agenda from the command argument
+  "reorganize the next steps by complexity"). Decomposed R-3 (smaller board
+  variant) into R-27/R-28/R-29 after finding it was another large task
+  disguised as one item: sternhalma-game's board layout is compile-time
+  fixed-size arrays, not runtime-configurable, making the Rust-side slice
+  (R-27) genuinely large, while the bindings (R-28) and agent-side (R-29)
+  slices are small-to-trivial since action_space.py/heuristic.py already
+  derive their board-size-dependent constants at runtime rather than
+  hardcoding them. Annotated all 9 other outstanding items with a
+  Complexity note and wrote a complexity-ordered recommended sequence into
+  the handoff. No source changed; that's /project-implement's job.
 - 2026-09-16: Implemented R-1 -- sternhalma-agent has a potential function
   (heuristic.py) biasing MCTS priors toward pieces closer to goal, wired
   into mcts.py via a heuristic_weight parameter (on by default). Caught and

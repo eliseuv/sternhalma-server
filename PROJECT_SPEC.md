@@ -21,9 +21,13 @@ updated: 2026-09-16
      - **Now blocked on:** ...
      - **Next action:** ... -->
 
-- **Last session:** Implemented R-18 (fixed 121x121 action-space encoding, action_space.py), R-19 (MCTS search, mcts.py -- sternhalma_rs.Game has no clone/undo, so simulated states are reconstructed by replaying history()), and R-1 (potential function biasing MCTS priors, heuristic.py). R-1's first draft had a real bug -- fixed a fixed-identity potential to be properly current-mover-relative after my own test caught it (-0.0 instead of the expected value) before writing anything back to the spec.
+- **Last session:** Reorganized the 10 outstanding requirements by complexity (agenda from the command argument). R-3 (smaller board) turned out to be another large task disguised as one item -- decomposed into R-27 (Rust board size configurable, large), R-28 (expose via bindings, small-medium), R-29 (confirm agent-side adapts, small -- likely pure verification since action_space.py/heuristic.py already derive their constants at runtime). Every other outstanding item got a Complexity: note in its body.
 - **Now blocked on:** Nothing (no open Q- items).
-- **Next action:** R-20 (self-play game generation) is the next link in the M-2 chain -- depends on R-19 (done). mcts.search isn't wired into any Agent subclass yet (no AgentMCTS); R-20 will need that wiring to actually play games.
+- **Next action, by complexity:**
+  - Small, unblocked now: R-17 (cross-game reconnection -- likely just needs a test), R-21 (replay buffer).
+  - Medium, unblocked now: R-20 (self-play generation -- R-18/R-19/R-1 are all done).
+  - Then in chain order: R-22 (medium-large, needs R-21) -> R-23 (medium, needs R-20/21/22) -> R-24/R-25/R-26 (trivial/small, pick up as their prerequisite lands) -> R-10 (medium, needs R-23).
+  - Large standalone track, independent of the above, tackle whenever: R-27 -> R-28 -> R-29 (board-size configurability).
 
 ## 2. Problem
 
@@ -110,7 +114,7 @@ Depends on R-5 (the self-play training loop doesn't exist yet; this item refines
 Point 4 (board inputs normalized) is already satisfied: alphazero.py's from_state emits binary 0.0/1.0 mask channels (via sternhalma_rs.Game.board()), not raw arbitrary IDs -- confirmed by reading the code, not carried forward as a new item. Points 1-3 became R-24/R-25/R-26.
 
 ### R-3 — Support a smaller/reduced board variant for faster iteration
-- status: specified
+- status: superseded
 - acceptance: The game/agent can be configured to run on a board smaller than the standard 121-cell board, reducing the training/testing state space.
 - covers: [G-3]
 - refs: [R-23]
@@ -176,6 +180,8 @@ Measured (release build, this machine): game_iter_available_moves ~2.1us/call, b
 - acceptance: After each training iteration, the new checkpoint plays a fixed number of evaluation games against the previous best checkpoint; if it wins >=55%, it replaces the best network used for subsequent self-play generation.
 
 Implements G-6. Depends on R-5 existing first.
+
+Complexity: medium. Reuses most of R-20's self-play-via-MCTS machinery (play games, track outcomes) against two fixed checkpoints instead of one live network; the new part is just the win-rate gate and swapping 'best'. Depends on R-23 (needs checkpointing to exist).
 
 ### R-11 — Package sternhalma-python as an installable Python module and wire it as a uv dependency of sternhalma-agent
 - status: implemented
@@ -245,6 +251,8 @@ Also routes reconnection across concurrent games (tries each tracked game's sess
 
 Second slice of R-4. Depends on R-16's Lobby existing first -- today each Server's own sessions: HashMap<Uuid, Player> only makes sense when there's exactly one game.
 
+Complexity: small. Independent of the M-2 chain (different subsystem, sternhalma-server). R-16's Lobby.reconnect() already tries every tracked game in turn, so this may just need a verification test with 2+ concurrent games, not new implementation -- confirm rather than assume.
+
 ### R-18 — Define a fixed action encoding for the policy head and translate to/from the server's move list
 - status: implemented
 - covers: [G-3]
@@ -271,6 +279,8 @@ Terminal-value convention: sternhalma-game only ever finishes a game via the mov
 
 Third slice of R-5.
 
+Complexity: medium. Unblocked now -- R-18/R-19/R-1 are all done. Orchestration over existing pieces (mcts.search, from_state, action_space), not a new algorithm: alternate search() calls, record (state, policy target, outcome) per turn, backfill the outcome once the game ends.
+
 ### R-21 — Implement a replay buffer for self-play training data
 - status: specified
 - covers: [G-3]
@@ -278,6 +288,8 @@ Third slice of R-5.
 - refs: [R-20]
 
 Fourth slice of R-5.
+
+Complexity: small. A self-contained data structure (bounded-capacity buffer, push + random-sample) -- no dependency on the rest of the chain to start; only needs real self-play data (R-20) to be exercised end-to-end.
 
 ### R-22 — Implement the training step with target-network updates
 - status: specified
@@ -287,6 +299,8 @@ Fourth slice of R-5.
 
 Fifth slice of R-5.
 
+Complexity: medium-large. The most involved piece of the chain still ahead: batched loss computation (policy cross-entropy over the 121x121 action space + value MSE), an optimizer, and a target-network sync schedule -- getting tensor shapes and the policy-target format consistent with action_space.py matters here.
+
 ### R-23 — Wire main.py --train to run the full self-play/train loop
 - status: specified
 - covers: [G-3]
@@ -294,6 +308,8 @@ Fifth slice of R-5.
 - refs: [R-18, R-19, R-20, R-21, R-22]
 
 Sixth and final slice of R-5, tying the previous five together.
+
+Complexity: medium. Mostly plumbing once R-20/R-21/R-22 exist, but real plumbing: a training loop driving self-play -> buffer -> train on a schedule, plus checkpoint save/load and tracking which checkpoint self-play currently uses.
 
 ### R-24 — Log training loss at each training step
 - status: specified
@@ -304,6 +320,8 @@ Sixth and final slice of R-5, tying the previous five together.
 
 First of R-2's three still-open checks (point 4 was already satisfied, see R-2's body).
 
+Complexity: trivial. A logging statement inside R-22's training step, once it exists.
+
 ### R-25 — Test replay buffer stores and samples transitions correctly
 - status: specified
 - covers: [G-3]
@@ -313,6 +331,8 @@ First of R-2's three still-open checks (point 4 was already satisfied, see R-2's
 
 Second of R-2's three still-open checks.
 
+Complexity: small. A focused unit test once R-21 exists, same shape as this session's other test-writing items (R-7, R-15, etc.).
+
 ### R-26 — Test target-network sync schedule
 - status: specified
 - covers: [G-3]
@@ -321,6 +341,34 @@ Second of R-2's three still-open checks.
 - acceptance: A test confirms the target network's weights match the evaluation network's immediately after a scheduled sync interval, and can differ between syncs.
 
 Third of R-2's three still-open checks.
+
+Complexity: small. A focused unit test once R-22 exists.
+
+### R-27 — Make sternhalma-game's board size configurable instead of compile-time-fixed
+- status: specified
+- covers: [G-1, G-3]
+- supersedes: [R-3]
+- acceptance: sternhalma-game can construct a Board/Game at a board size smaller than the standard 17x17/121-cell star, with correct valid-position, starting-position, and goal-region layouts at that size (movement, hopping, scoring, and win detection all still correct -- covered by tests analogous to R-7's, run at at least one reduced size).
+
+First (hardest) slice of R-3. Currently BOARD_LENGTH, VALID_POSITIONS ([HexIdx; 121]), PLAYER1_STARTING_POSITIONS/PLAYER2_STARTING_POSITIONS ([HexIdx; 15]) are all compile-time constants with sizes baked into the array types (sternhalma-game/src/board/lut.rs) -- this needs real restructuring (e.g. Vec-backed LUTs computed for a given size, or a const generic), not a parameter tweak. Complexity: large.
+
+### R-28 — Expose configurable board size through sternhalma-python's bindings
+- status: specified
+- covers: [G-2, G-3]
+- supersedes: [R-3]
+- refs: [R-27]
+- acceptance: sternhalma_rs.Game accepts a board-size argument (or equivalent) and constructs a game at that size, with board()/available_moves()/etc. all correctly shaped for it.
+
+Second slice of R-3. Depends on R-27 existing first. Complexity: small-to-medium -- mostly plumbing a new constructor argument through once the Rust side supports it.
+
+### R-29 — Confirm agent-side code adapts to a configurable board size
+- status: specified
+- covers: [G-3]
+- supersedes: [R-3]
+- refs: [R-28]
+- acceptance: action_space.py, heuristic.py, alphazero.py (SternhalmaZero's board_size/num_actions) and mcts.py all work correctly against a reduced-size game, verified by re-running their existing test suites (or size-parametrized variants) at a reduced size.
+
+Third slice of R-3. Depends on R-28. Complexity: small -- action_space.py and heuristic.py already derive their board-size-dependent constants (NUM_CELLS, goal regions) at runtime from a fresh Game rather than hardcoding them, so this slice may turn out to be pure verification rather than new code. alphazero.py's SternhalmaZero construction (board_size, num_actions) already takes these as constructor arguments, so no change expected there either -- but confirm, don't assume.
 
 ## 8. Interfaces
 
@@ -465,3 +513,16 @@ _Append-only. Newest at the bottom._
 - 2026-09-16 — R-18 status: specified -> implemented
 - 2026-09-16 — R-19 status: specified -> implemented
 - 2026-09-16 — R-1 status: specified -> implemented
+- 2026-09-16 — R-3 status: specified -> superseded
+- 2026-09-16 — added R-27: Make sternhalma-game's board size configurable instead of compile-time-fixed
+- 2026-09-16 — added R-28: Expose configurable board size through sternhalma-python's bindings
+- 2026-09-16 — added R-29: Confirm agent-side code adapts to a configurable board size
+- 2026-09-16 — R-17 status: specified -> specified
+- 2026-09-16 — R-20 status: specified -> specified
+- 2026-09-16 — R-21 status: specified -> specified
+- 2026-09-16 — R-22 status: specified -> specified
+- 2026-09-16 — R-23 status: specified -> specified
+- 2026-09-16 — R-24 status: specified -> specified
+- 2026-09-16 — R-25 status: specified -> specified
+- 2026-09-16 — R-26 status: specified -> specified
+- 2026-09-16 — R-10 status: specified -> specified
