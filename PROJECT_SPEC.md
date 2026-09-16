@@ -21,9 +21,9 @@ updated: 2026-09-15
      - **Now blocked on:** ...
      - **Next action:** ... -->
 
-- **Last session:** Folded your DIRECTIONS.md roadmap (Preparation/Learning/Improvement) into the spec: confirmed R-6/R-7/R-8/R-5 already matched your intent, added R-9 (engine throughput benchmark, no invented target), G-6 + R-10 (checkpoint-gating as the more rigorous self-play benchmark beyond the random-baseline win rate), and M-1/M-2/M-3 capturing the three phases.
-- **Now blocked on:** Nothing (no open Q- items).
-- **Next action:** Start M-1 (Preparation): R-6 (migrate agent onto sternhalma_rs bindings), R-7 (engine tests), R-9 (engine benchmark), R-8 (report invalid client requests) — in whatever order suits, they're independent of each other but all precede M-2's R-5.
+- **Last session:** Implemented R-7 (sternhalma-game unit tests), R-9 (engine throughput benchmarks), R-8 (server reports invalid client requests instead of silently dropping them), and R-11 (sternhalma-python packaged as a uv dependency of sternhalma-agent via maturin, verified end-to-end). R-6 was decomposed into R-11 (done) and R-12 (the actual code migration, deferred).
+- **Now blocked on:** Nothing (no open Q- items). R-12 is next but not blocked, just deferred.
+- **Next action:** R-12 -- migrate sternhalma-agent's board-state tracking (agent.py, alphazero.py, client/protocol.py all currently `from sternhalma import ...`, resolving to sternhalma-agent/sternhalma.py's independent reimplementation) onto sternhalma_rs, now that R-11 makes it importable. Also worth a future /project-review pass: sternhalma-python/src/lib.rs fails cargo clippy -D warnings and cargo fmt --check (pre-existing, found while verifying R-11, not fixed); tests/test_integration.py fails to collect (ModuleNotFoundError: No module named 'client', pre-existing); movement.rs has a documented validation gap (single_element_hops_path, from R-7).
 
 ## 2. Problem
 
@@ -233,9 +233,11 @@ User's explicit direction: "There should be a core high performance rust impleme
 
 ### M-1 — Preparation: dedupe game rules, harden and benchmark the engine, fix small bugs
 - status: planned
-- covers: [R-6, R-7, R-8, R-9]
+- covers: [R-11, R-12, R-7, R-8, R-9]
 
 From DIRECTIONS.md's Preparation section. Groups: remove the agent's duplicate Python rules (R-6, implementing D-2), add robust/property test coverage and a throughput benchmark to sternhalma-game (R-7, R-9), and fix the server's silent-drop of invalid client requests (R-8).
+
+Updated after R-6 was decomposed into R-11 (packaging, done) and R-12 (the migration itself, outstanding) -- M-1 isn't done until R-12 lands too.
 
 ### M-2 — Learning: implement the AlphaZero-compatible training architecture
 - status: planned
@@ -293,3 +295,4 @@ _Append-only. Newest at the bottom._
 - 2026-09-15 — added R-12: Migrate sternhalma-agent's board-state tracking onto sternhalma_rs bindings
 - 2026-09-15 — R-12 refs: ∅ -> [R-11]
 - 2026-09-15 — R-11 status: specified -> implemented
+- 2026-09-15 — M-1 covers: [R-6, R-7, R-8, R-9] -> [R-11,R-12,R-7,R-8,R-9]
