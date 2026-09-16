@@ -21,9 +21,9 @@ updated: 2026-09-16
      - **Now blocked on:** ...
      - **Next action:** ... -->
 
-- **Last session:** Decomposed the two remaining oversized items per the user's request. R-5 (MCTS-guided self-play training loop, previously one unmeasurable acceptance) split into a 6-step sequenced chain: R-18 (fixed 121x121 action encoding + legal-move masking), R-19 (MCTS search), R-20 (self-play generation), R-21 (replay buffer), R-22 (training step + target-network sync), R-23 (wire main.py --train). R-2 (4-check bundle) split into R-24/R-25/R-26 (loss logging, replay-buffer test, target-sync test); its 4th check (input normalization) was confirmed already satisfied by from_state's existing binary masks and not re-queued. R-1/R-3/R-9/R-10's stale refs to the now-superseded R-5 were repointed at the specific new slice each actually depends on.
+- **Last session:** Implemented R-18 (fixed 121x121 action-space encoding, action_space.py), R-19 (MCTS search, mcts.py -- sternhalma_rs.Game has no clone/undo, so simulated states are reconstructed by replaying history()), and R-1 (potential function biasing MCTS priors, heuristic.py). R-1's first draft had a real bug -- fixed a fixed-identity potential to be properly current-mover-relative after my own test caught it (-0.0 instead of the expected value) before writing anything back to the spec.
 - **Now blocked on:** Nothing (no open Q- items).
-- **Next action:** Start M-2 with R-18 (the action encoding) -- it's the one every other Learning-phase item depends on, directly or transitively.
+- **Next action:** R-20 (self-play game generation) is the next link in the M-2 chain -- depends on R-19 (done). mcts.search isn't wired into any Agent subclass yet (no AgentMCTS); R-20 will need that wiring to actually play games.
 
 ## 2. Problem
 
